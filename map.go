@@ -1,19 +1,18 @@
 package gormmapper
 
-// hash map
+// map
 type Map struct {
-	dict  map[string]interface{} 	// 数据字典
-	value interface{}                 	// 当前值
-	len   int64                       	// 字典大小
-	kType string						// key 类型
-	vType string						// value 类型
+	dict  map[string]interface{} // 数据字典
+	value interface{}            // 当前值
+	len   int64                  // 字典大小
+	kType string                 // key 类型
+	vType string                 // value 类型
 }
-
 
 /**
  * 实例化
  * @param
- * @return 
+ * @return
  */
 func NMap() *Map {
 	hm := &Map{}
@@ -28,14 +27,14 @@ func NMap() *Map {
  */
 func (m *Map) Put(key string, value interface{}) *Map {
 	m.dict[key] = value
-	m.len ++
+	m.len++
 	return m
 }
 
 /**
  * get
  * @param
- * @return 
+ * @return
  */
 func (m *Map) Get(key string) interface{} {
 	m.value = m.dict[key]
@@ -45,7 +44,7 @@ func (m *Map) Get(key string) interface{} {
 /**
  * key
  * @param
- * @return 
+ * @return
  */
 func (m *Map) Key(key string) *Map {
 	m.value = m.dict[key]
@@ -53,9 +52,9 @@ func (m *Map) Key(key string) *Map {
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
 func (m *Map) String() string {
 	if m.value == nil {
@@ -65,9 +64,9 @@ func (m *Map) String() string {
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
 func (m *Map) Int() int {
 	if m.value == nil {
@@ -77,9 +76,9 @@ func (m *Map) Int() int {
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
 func (m *Map) Int64() int64 {
 	if m.value == nil {
@@ -89,9 +88,9 @@ func (m *Map) Int64() int64 {
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
 func (m *Map) Float32() float32 {
 	if m.value == nil {
@@ -101,9 +100,9 @@ func (m *Map) Float32() float32 {
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
 func (m *Map) Float64() float64 {
 	if m.value == nil {
@@ -113,12 +112,12 @@ func (m *Map) Float64() float64 {
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
 func (m *Map) Keys() []string {
-	keys := make([] string, 0)
+	keys := make([]string, 0)
 	for k, _ := range m.dict {
 		keys = append(keys, k)
 	}
@@ -126,19 +125,19 @@ func (m *Map) Keys() []string {
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
 func (m *Map) Values() map[string]interface{} {
 	return m.dict
 }
 
 /**
- * 
- * @param 
- * @return 
+ *
+ * @param
+ * @return
  */
-func (m *Map) Iterator() map[string] interface{} {
+func (m *Map) Iterator() map[string]interface{} {
 	return m.Values()
 }
