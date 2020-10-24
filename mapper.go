@@ -44,7 +44,7 @@ func (m *Mapper) Model(entity interface{}) *Mapper {
  * @return
  */
 func (m *Mapper) Insert(entity interface{}) int64 {
-	d := m.DB().Create(entity)
+	d := m.DB().Debug().Create(entity)
 	if d.Error != nil {
 		return 0
 	}
@@ -58,7 +58,7 @@ func (m *Mapper) Insert(entity interface{}) int64 {
  * @return
  */
 func (m *Mapper) InsertSelective(entity interface{}) int64 {
-	d := m.DB().Create(entity)
+	d := m.DB().Debug().Create(entity)
 	if d.Error != nil {
 		return 0
 	}
@@ -418,6 +418,7 @@ func (m *Mapper) buildSearchBuilder(builder *SearchBuilder) *gorm.DB {
 
 	// where
 	queryValue := m.ParseQueryAndValueBySearchBuilder(builder)
+	log.Printf("queryValue: %v", queryValue)
 	if len(queryValue.Query) > 0 {
 		d = d.Where(queryValue.Query, queryValue.Value)
 	}

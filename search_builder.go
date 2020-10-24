@@ -24,8 +24,8 @@ type SearchBuilder struct {
 	parsedWhere map[string]interface{}
 	parsedValue map[string]interface{}
 	fields      interface{}
-	Entity		interface{}
-	debug		bool
+	Entity      interface{}
+	debug       bool
 	maxPage     int
 	maxSize     int
 }
@@ -35,7 +35,7 @@ type SearchBuilder struct {
  * @param
  * @return
  */
-func NSearchBuilder(entity interface{}) *SearchBuilder {
+func Builder(entity interface{}) *SearchBuilder {
 	return &SearchBuilder{
 		Entity:      entity,
 		sort:        make(map[string]string),
@@ -58,8 +58,8 @@ func (sb *SearchBuilder) Where(where map[string]interface{}) *SearchBuilder {
  * 条件
  * @author  imp.zhang
  * @date    2020/10/22
- * @param   
- * @return  
+ * @param
+ * @return
  */
 func (sb *SearchBuilder) Sort(column string, sortType string) *SearchBuilder {
 	sb.sort[column] = sortType
@@ -69,8 +69,8 @@ func (sb *SearchBuilder) Sort(column string, sortType string) *SearchBuilder {
 /**
  * 设置字段
  * @date    2020/10/22
- * @param   
- * @return  
+ * @param
+ * @return
  */
 func (sb *SearchBuilder) Field(fields interface{}) *SearchBuilder {
 	sb.fields = fields
@@ -124,14 +124,14 @@ func (sb *SearchBuilder) Limit(limit int) *SearchBuilder {
  * @return
  */
 func (sb *SearchBuilder) Build() *SearchBuilder {
-	sb.ParseWhere();
+	sb.ParseWhere()
 	return sb
 }
 
 /**
  * 获取页码
  * @param
- * @return  
+ * @return
  */
 func (sb *SearchBuilder) GetSize() int {
 	if sb.size <= 0 {
@@ -147,8 +147,8 @@ func (sb *SearchBuilder) GetSize() int {
 
 /**
  * 获取页数
- * @param   
- * @return  
+ * @param
+ * @return
  */
 func (sb *SearchBuilder) GetPage() int {
 	if sb.page <= 0 {
@@ -164,8 +164,8 @@ func (sb *SearchBuilder) GetPage() int {
 
 /**
  * 允许最大页数
- * @param   
- * @return  
+ * @param
+ * @return
  */
 func (sb *SearchBuilder) GetMaxPage() int {
 	if sb.maxPage > 0 {
@@ -188,8 +188,8 @@ func (sb *SearchBuilder) GetMaxSize() int {
 
 /**
  * 获取排序
- * @param   
- * @return  
+ * @param
+ * @return
  */
 func (sb *SearchBuilder) GetSort() map[string]string {
 	return sb.sort
@@ -223,7 +223,7 @@ func (sb *SearchBuilder) getDebug() bool {
  */
 func (sb *SearchBuilder) GetWhere() interface{} {
 	if sb.where == nil {
-		return make(map[string] interface{})
+		return make(map[string]interface{})
 	}
 	return sb.where
 }
@@ -233,7 +233,7 @@ func (sb *SearchBuilder) GetWhere() interface{} {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetParsedWhere() map[string] interface{} {
+func (sb *SearchBuilder) GetParsedWhere() map[string]interface{} {
 	return sb.parsedWhere
 }
 
@@ -242,7 +242,7 @@ func (sb *SearchBuilder) GetParsedWhere() map[string] interface{} {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetParsedValue() map[string] interface{} {
+func (sb *SearchBuilder) GetParsedValue() map[string]interface{} {
 	return sb.parsedValue
 }
 
@@ -252,7 +252,7 @@ func (sb *SearchBuilder) GetParsedValue() map[string] interface{} {
  * @return
  */
 func (sb *SearchBuilder) ParseWhere() {
-	for k, v := range sb.where  {
+	for k, v := range sb.where {
 		sb.parseOperator(k, v)
 	}
 }
@@ -263,12 +263,12 @@ func (sb *SearchBuilder) ParseWhere() {
  * @return
  */
 func (sb *SearchBuilder) parseOperator(key string, val interface{}) string {
-	index := strings.LastIndex(key, "_");
-	if (index <= 0) {
-		return OPERATE_EQ;
+	index := strings.LastIndex(key, "_")
+	if index <= 0 {
+		return OPERATE_EQ
 	}
 
-	op := key[index + 1:]
+	op := key[index+1:]
 	op = strings.ToLower(op)
 	rKey := key[0:index]
 
@@ -300,5 +300,5 @@ func (sb *SearchBuilder) parseOperator(key string, val interface{}) string {
 		sb.parsedWhere[rKey] = rKey + " EXIST (?) "
 	}
 
-	return op;
+	return op
 }
