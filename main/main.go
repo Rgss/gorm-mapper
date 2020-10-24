@@ -20,12 +20,45 @@ func main() {
 	//log.Printf("num: %v", num)
 	//log.Printf("user: %v", user)
 
-	where := map[string]interface{}{"id": 32}
-	builder = builder.Debug().Where(where).Build()
-	err := tem.SelectOneBySearchBuilder(builder, user)
-	log.Printf("err: %v", err)
-	log.Printf("user: %v", user)
+	//where := map[string]interface{}{"id_gt": 32}
+	//builder = builder.Debug().Where(where).Build()
+	//log.Printf("builder: %v", builder.GetParsedValue())
+	//err := tem.SelectOneBySearchBuilder(builder, user)
+	//log.Printf("err: %v", err)
+	//log.Printf("user: %v", user)
 
+	//users := make([]User, 0)
+	//where := map[string]interface{}{"id_gt": 32}
+	//builder = builder.Debug().Where(where).Build()
+	//err, pager := tem.SelectPageBySearchBuilder(builder, &users)
+	//log.Printf("err: %v", err)
+	//log.Printf("pager: %v", pager)
+	//log.Printf("users: %v", users)
+
+	//fields := []string{"id", "username", "password"}
+	//users := make([]User, 0)
+	//where := map[string]interface{}{"id_gt": 31}
+	//builder = builder.Debug().Where(where).Build()
+	//err, pager := tem.PreSelectFields(fields).SelectPageBySearchBuilder(builder, &users)
+	//log.Printf("err: %v", err)
+	//log.Printf("pager: %v", pager)
+	//log.Printf("users: %v", users)
+
+	//fields := []string{"id", "username", "password"}
+	//user.Password = "abc"
+	//user.Status = 0
+	//num := tem.PreUpdateFields(fields).UpdateByPrimaryKey(32, user)
+	//log.Printf("num: %v", num)
+
+	// where := gormmapper.WhereBuilder().Put("id_gt", 30).Put("status", 1)
+	entity := new(User)
+	where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
+	log.Printf("builder: %v", builder)
+	builder.Where(where).Debug().Build()
+	tem.SelectBySearchBuilder(builder, &entity)
+	log.Printf("entity: %v", entity)
+
+	log.Printf("tem: %v", tem)
 }
 
 type TEM struct {

@@ -14,9 +14,10 @@ type Map struct {
  * @param
  * @return
  */
-func NMap() *Map {
-	hm := &Map{}
-	hm.dict = make(map[string]interface{})
+func MapBuilder() *Map {
+	hm := &Map{
+		dict: make(map[string]interface{}),
+	}
 	return hm
 }
 

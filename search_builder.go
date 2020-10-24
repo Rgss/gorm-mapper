@@ -20,7 +20,7 @@ type SearchBuilder struct {
 	limit       int
 	group       interface{}
 	sort        map[string]string
-	where       map[string]interface{}
+	where       *Where
 	parsedWhere map[string]interface{}
 	parsedValue map[string]interface{}
 	fields      interface{}
@@ -49,7 +49,7 @@ func Builder(entity interface{}) *SearchBuilder {
  * @param where
  * @return
  */
-func (sb *SearchBuilder) Where(where map[string]interface{}) *SearchBuilder {
+func (sb *SearchBuilder) Where(where *Where) *SearchBuilder {
 	sb.where = where
 	return sb
 }
@@ -252,7 +252,8 @@ func (sb *SearchBuilder) GetParsedValue() map[string]interface{} {
  * @return
  */
 func (sb *SearchBuilder) ParseWhere() {
-	for k, v := range sb.where {
+	where := sb.where.Iterator()
+	for k, v := range where {
 		sb.parseOperator(k, v)
 	}
 }
@@ -263,14 +264,17 @@ func (sb *SearchBuilder) ParseWhere() {
  * @return
  */
 func (sb *SearchBuilder) parseOperator(key string, val interface{}) string {
+	var op string
+	var rKey string
 	index := strings.LastIndex(key, "_")
 	if index <= 0 {
-		return OPERATE_EQ
+		op = OPERATE_EQ
+		rKey = key
+	} else {
+		op = key[index+1:]
+		op = strings.ToLower(op)
+		rKey = key[0:index]
 	}
-
-	op := key[index+1:]
-	op = strings.ToLower(op)
-	rKey := key[0:index]
 
 	// 设置解析值
 	sb.parsedValue[rKey] = val

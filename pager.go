@@ -15,7 +15,7 @@ type Pager struct {
  * @param
  * @return
  */
-func NPager() *Pager {
+func PagerBuilder() *Pager {
 	return &Pager{}
 }
 

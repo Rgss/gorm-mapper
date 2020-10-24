@@ -3,7 +3,9 @@ package gormmapper
 /**
  * 搜索条件
  */
-type Where Map
+type Where struct {
+	Map
+}
 
 /**
  * 条件初始化
@@ -11,6 +13,19 @@ type Where Map
  * @param
  * @return
  */
-func NWhere() *Where {
-	return &Where{}
+func WhereBuilder() *Where {
+	return &Where{
+		Map{dict: make(map[string]interface{})},
+	}
+}
+
+/**
+ * 添加操作符
+ * @param
+ * @return
+ */
+func (w *Where) AddOperator(op Operator) *Where {
+	key := op.Key + "_" + op.Op
+	w.Put(key, op.Value)
+	return w
 }

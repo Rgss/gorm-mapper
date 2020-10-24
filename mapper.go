@@ -11,8 +11,10 @@ type Mapper struct {
 	ModelEntity  interface{}
 	Builder      *SearchBuilder
 	gdb          *gorm.DB
-	upFields     []string // 更新字段
+	upFields     []string // 更新字å段
 	selectFields []string // 查询字段
+
+	debug bool // 是否debug
 }
 
 /**
@@ -44,7 +46,7 @@ func (m *Mapper) Model(entity interface{}) *Mapper {
  * @return
  */
 func (m *Mapper) Insert(entity interface{}) int64 {
-	d := m.DB().Debug().Create(entity)
+	d := m.db().Debug().Create(entity)
 	if d.Error != nil {
 		return 0
 	}
@@ -58,7 +60,7 @@ func (m *Mapper) Insert(entity interface{}) int64 {
  * @return
  */
 func (m *Mapper) InsertSelective(entity interface{}) int64 {
-	d := m.DB().Debug().Create(entity)
+	d := m.db().Debug().Create(entity)
 	if d.Error != nil {
 		return 0
 	}
@@ -84,7 +86,7 @@ func (m *Mapper) SearchBuilder(builder *SearchBuilder) *Mapper {
  */
 func (m *Mapper) SelectByPrimaryKey(id int, entity interface{}) error {
 	where := map[string]interface{}{"id": id}
-	e := m.DB().Model(entity).Where(where).Find(entity).Error
+	e := m.db().Model(entity).Where(where).Find(entity).Error
 	return e
 }
 
@@ -125,9 +127,8 @@ func (m *Mapper) SelectBySearchBuilder(builder *SearchBuilder, entities interfac
  */
 func (m *Mapper) SelectPageBySearchBuilder(builder *SearchBuilder, entities interface{}) (error, *Pager) {
 	d := m.buildSearchBuilder(builder)
-	d = d.Limit(builder.GetSize())
 
-	pager := NPager()
+	pager := PagerBuilder()
 	if d.Error != nil {
 		return d.Error, pager
 	}
@@ -141,6 +142,7 @@ func (m *Mapper) SelectPageBySearchBuilder(builder *SearchBuilder, entities inte
 
 	// rows
 	start := (pager.GetPage() - 1) * pager.GetSize()
+	d = d.Limit(builder.GetSize())
 	e := d.Offset(start).Find(entities).Error
 	return e, pager
 }
@@ -154,7 +156,7 @@ func (m *Mapper) SelectPageBySearchBuilder(builder *SearchBuilder, entities inte
 func (m *Mapper) UpdateByPrimaryKey(id int, entity interface{}) int64 {
 	where := map[string]interface{}{"id": id}
 	m.toMap(entity)
-	d := m.DB().Debug().Where(where).Save(entity)
+	d := m.db().Debug().Where(where).Updates(entity)
 	if d.Error != nil {
 		return 0
 	}
@@ -192,7 +194,7 @@ func (m *Mapper) toMap(entity interface{}) map[string]interface{} {
 		break
 	default:
 	}
-	log.Printf("mm: %v", mm)
+	//log.Printf("mm: %v", mm)
 	return mm
 }
 
@@ -203,7 +205,7 @@ func (m *Mapper) toMap(entity interface{}) map[string]interface{} {
  */
 func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
 	where := map[string]interface{}{"id": id}
-	d := m.DB().Debug().Where(where).Updates(entity)
+	d := m.db().Debug().Where(where).Updates(entity)
 	if d.Error != nil {
 		return 0
 	}
@@ -290,7 +292,7 @@ func (m *Mapper) DeleteGlobalBySearchBuilder(builder *SearchBuilder) int64 {
  */
 func (m *Mapper) DeleteByPrimaryKey(id int) int64 {
 	where := map[string]interface{}{"id": id}
-	d := m.DB().Where(where).Delete(m.ModelEntity)
+	d := m.db().Where(where).Delete(m.ModelEntity)
 	if d.Error != nil {
 		return 0
 	}
@@ -336,7 +338,7 @@ func (m *Mapper) DecrBySearchBuilder(column string, step int, where interface{})
  * @return
  */
 func (m *Mapper) RawQuery(sqlQuery string, entity interface{}) error {
-	return m.DB().Raw(sqlQuery).Scan(&entity).Error
+	return m.db().Raw(sqlQuery).Scan(&entity).Error
 }
 
 /**
@@ -345,7 +347,7 @@ func (m *Mapper) RawQuery(sqlQuery string, entity interface{}) error {
  * @return
  */
 func (m *Mapper) RawExec(sqlQuery string) int64 {
-	d := m.DB().Exec(sqlQuery)
+	d := m.db().Exec(sqlQuery)
 	if d.Error != nil {
 		return 0
 	}
@@ -409,7 +411,7 @@ func (m *Mapper) buildOrder(builder *SearchBuilder, d *gorm.DB) *gorm.DB {
  * @return
  */
 func (m *Mapper) buildSearchBuilder(builder *SearchBuilder) *gorm.DB {
-	d := m.DB()
+	d := m.db()
 
 	if builder.Entity != nil {
 		m.ModelEntity = builder.Entity
@@ -418,9 +420,9 @@ func (m *Mapper) buildSearchBuilder(builder *SearchBuilder) *gorm.DB {
 
 	// where
 	queryValue := m.ParseQueryAndValueBySearchBuilder(builder)
-	log.Printf("queryValue: %v", queryValue)
+	//log.Printf("queryValue: %v", queryValue)
 	if len(queryValue.Query) > 0 {
-		d = d.Where(queryValue.Query, queryValue.Value)
+		d = d.Where(queryValue.Query, queryValue.Value...)
 	}
 
 	// order
@@ -440,7 +442,7 @@ func (m *Mapper) buildSearchBuilder(builder *SearchBuilder) *gorm.DB {
 // 搜索条件
 type SearchBuilderQueryValue struct {
 	Query string
-	Value interface{}
+	Value []interface{}
 }
 
 /**
@@ -508,6 +510,7 @@ func (m *Mapper) afterBehaviourCallback() {
 func (m *Mapper) release() {
 	m.upFields = nil
 	m.selectFields = nil
+	m.debug = false
 }
 
 /**
@@ -519,6 +522,11 @@ func GDB() *gorm.DB {
 	return Connection().DB()
 }
 
+/**
+ * test
+ * @param
+ * @return
+ */
 func (m *Mapper) M() {
 	log.Printf("mapper.m")
 }
