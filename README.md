@@ -65,6 +65,40 @@ type User struct {
 
  ```
  
- **WhereBuilder**
+ **Where**
+ 结构体Where是一个基于map的实现，主要用于搜索条件的构建。
+ ```
+ # 初始化 
+ where := gormmapper.WhereBuilder()
 
+ # 基于map的条件添加
+ where.Put("status", 1).Put("create_time_gt", 100)
+
+ # 基于操作符的条件添加，具体操作符可参考operator.go文件
+ where.AddOperator(gormmapper.OperatorGT("create_time", 100)).AddOperator(gormmapper.OperatorEQ("status", 1))
+ 
+ ```
+   
  **SearchBuilder**
+ 结构体SearchBuilder主要用于mapper中sql各属性映射的构建起。
+ ```
+ # 初始化
+ builder := gormmapper.Builder(&User{});
+ builder.Where(where).Debug().Page(1).Sort("id", "desc").Sort("create_time", "desc")
+
+ # 格式化条件生成
+ builder.build()
+```
+   
+ **MapperGenrator**
+ 用于根据数据表结构，生成对象实体的生成器。
+ ```
+ # 初始化
+ m := gormmapper.MapperBuilder()
+ gen := gormmapper.MapperGeneratorBuilder(*m)
+ gen.EntityPackage("entity")  // 设置实体报名
+ gen.EntityPath("/data/go/src/github.com/Rgss/gorm-mapper/main/entity") // 设置实体路径
+ gen.Start()
+```
+ 
+ 
