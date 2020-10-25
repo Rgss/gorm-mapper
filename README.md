@@ -94,7 +94,7 @@ type User struct {
  ```
  <br>  
    
-## earchBuilder  
+## SearchBuilder  
  结构体SearchBuilder主要用于mapper中sql各属性映射的构建起。
  ```
  # 初始化
