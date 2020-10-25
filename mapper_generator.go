@@ -79,9 +79,9 @@ func (mg *MapperGenerator) Start() {
 	tables := mg.ShowTables()
 	for _, t := range tables {
 		log.Printf("t: %v", t)
-		createTableSql := mg.ShowCreateTableSql(t)
-		to := mg.ParseSQL(createTableSql)
-		mg.CreateEntity(to)
+		s := mg.ShowCreateTableSql(t)
+		o := mg.ParseSQL(s)
+		mg.CreateEntity(o)
 
 	}
 }
