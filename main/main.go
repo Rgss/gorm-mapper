@@ -51,12 +51,19 @@ func main() {
 	//log.Printf("num: %v", num)
 
 	// where := gormmapper.WhereBuilder().Put("id_gt", 30).Put("status", 1)
-	entity := new(User)
-	where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
-	log.Printf("builder: %v", builder)
-	builder.Where(where).Debug().Build()
-	tem.SelectBySearchBuilder(builder, &entity)
-	log.Printf("entity: %v", entity)
+	//entity := new(User)
+	//where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
+	//log.Printf("builder: %v", builder)
+	//builder.Where(where).Debug().Build()
+	//tem.SelectBySearchBuilder(builder, &entity)
+	//log.Printf("entity: %v", entity)
+
+	//
+	m := gormmapper.MapperBuilder()
+	gen := gormmapper.MapperGeneratorBuilder(*m)
+	gen.EntityPackage("entity")
+	gen.EntityPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/entity")
+	gen.Start()
 
 	log.Printf("tem: %v", tem)
 }

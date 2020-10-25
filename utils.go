@@ -1,10 +1,9 @@
 package gormmapper
 
-
 /**
  * md5
  * @param
- * @return 
+ * @return
  */
 func md5(in string) string {
 	return in

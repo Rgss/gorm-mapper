@@ -24,7 +24,7 @@ type Mapper struct {
  * @param
  * @return
  */
-func NMapper() *Mapper {
+func MapperBuilder() *Mapper {
 	return &Mapper{}
 }
 
@@ -347,7 +347,7 @@ func (m *Mapper) RawQuery(sqlQuery string, entity interface{}) error {
  * @return
  */
 func (m *Mapper) RawExec(sqlQuery string) int64 {
-	d := m.db().Exec(sqlQuery)
+	d := m.db().Debug().Exec(sqlQuery)
 	if d.Error != nil {
 		return 0
 	}
