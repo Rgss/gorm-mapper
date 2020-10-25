@@ -21,24 +21,50 @@ type User struct {
  	&nbsp;&nbsp;&nbsp;&nbsp;return "user"  
  }  
  
- type TEM struct {
+ type TestMapper struct {
 	gormmapper.Mapper
  }
 
  user := new(User)
- tem := &TEM{}
- builder := gormmapper.Builder(&user)
+ testMapper := &TestMapper{}
+ builder := gormmapper.Builder(&User{})
 
  # 新增数据
  //user.Username = "imp"
  //user.Password = "123456"
- //num := tem.Insert(user)	// 返回受影响记录数
+ //num := testMapper.Insert(user)	// 返回受影响记录数
 
- # 读取数据
- // where := gormmapper.WhereBuilder().Put("id_gt", 30).Put("status", 1)
- //entity := new(User)
+ # 读取单条数据
+ //user := new(User)
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
  //builder.Where(where).Debug().Build()
- //tem.SelectBySearchBuilder(builder, &entity)
+ //testMapper.SelectOneBySearchBuilder(builder, &user)
+ //testMapper.SelectByPrimaryKey(1)
  
+ # 分页读取数据
+ //users := make([]User{}, 0)
+ //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
+ //builder.Where(where).Debug().Build()
+ //testMapper.SelectBySearchBuilder(builder, &users) // 多条读取
+ //_, pager := testMapper.SelectPageBySearchBuilder(builder, &users)
+ 
+ # 更新数据
+ //user := new(User)
+ //user.Password = "123456"
+ //testMapper.UpdateByPrimaryKey(1, user)
+ //testMapper.UpdateSelectiveByPrimaryKey(1, user) // 选择性字段更新, 为空 0 等不更新
+ //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
+ //builder.Where(where).Debug().Build()
+ //testMapper.UpdateBySearchBuilder(builder, user)  // 根据SearchBuilder修改
+
+ // 删除数据
+ //testMapper.DeleteByPrimaryKey(1)
+ //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1"))
+ //builder.Where(where).Limit(1).Debug().Build()
+ //testMappser.DeleteBySearchBuilder(builder)
+
  ```
+ 
+ **WhereBuilder**
+
+ **SearchBuilder**
