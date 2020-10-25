@@ -172,9 +172,6 @@ func (m *Mapper) toMap(entity interface{}) map[string]interface{} {
 	mm := make(map[string]interface{})
 	valueOf := reflect.ValueOf(entity)
 	elem := valueOf.Elem()
-	log.Printf("valueOf.Kind: %v", valueOf.Kind())
-	log.Printf("valueOf.MapKeys: %v", valueOf.Type())
-	log.Printf("valueOf.elem: %v", elem)
 	switch valueOf.Kind() {
 	case reflect.Struct:
 		break
@@ -186,7 +183,6 @@ func (m *Mapper) toMap(entity interface{}) map[string]interface{} {
 			vV := elem.Field(i).Interface()
 			mm[vN] = vV
 
-			log.Printf("name: %v, value: %v, %T", vN, vV, vV)
 			if vV == nil {
 				log.Printf("%v empty.", vN)
 			}
