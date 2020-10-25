@@ -13,7 +13,7 @@ gorm-mapper 是一个基于gorm的便捷映射器，更加方便的进行数据�
 
 **安装**
 ```
-    go get -u github.com/Rgss/gorm-mapper
+go get -u github.com/Rgss/gorm-mapper
 ```
 
 <br>
