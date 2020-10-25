@@ -65,6 +65,7 @@ type User struct {
 
  ```
  
+ 
  **Where**
  结构体Where是一个基于map的实现，主要用于搜索条件的构建。
  ```
@@ -79,6 +80,7 @@ type User struct {
  
  ```
    
+   
  **SearchBuilder**
  结构体SearchBuilder主要用于mapper中sql各属性映射的构建起。
  ```
@@ -89,6 +91,7 @@ type User struct {
  # 格式化条件生成
  builder.build()
 ```
+   
    
  **MapperGenrator**
  用于根据数据表结构，生成对象实体的生成器。
