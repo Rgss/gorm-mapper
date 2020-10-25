@@ -5,20 +5,20 @@ gorm-mapper 是一个基于gorm的便捷映射器，更加方便的进行数据�
 
 <br>
 
-**依赖**
+**依赖**  
 1、gorm v2
 
 
 <br>
 
-**安装**
+**安装**  
 ```
 go get -u github.com/Rgss/gorm-mapper
 ```
 
 <br>
 
-**数据库基本操作**
+**数据库基本操作**  
 
 ```
 type User struct {  
@@ -79,7 +79,7 @@ type User struct {
  ```
  <br>
  
- **Where**
+ **Where**  
  结构体Where是一个基于map的实现，主要用于搜索条件的构建。
  ```
  # 初始化 
@@ -94,7 +94,7 @@ type User struct {
  ```
  <br>  
    
- **SearchBuilder**
+ **SearchBuilder**  
  结构体SearchBuilder主要用于mapper中sql各属性映射的构建起。
  ```
  # 初始化
@@ -106,7 +106,7 @@ type User struct {
 ```
  <br>  
    
- **MapperGenrator**
+ **MapperGenrator**  
  用于根据数据表结构，生成对象实体的生成器。
  ```
  # 初始化
@@ -119,5 +119,5 @@ type User struct {
  
  <br>
    
- **其它**
+ **其它**  
  欢迎issues
