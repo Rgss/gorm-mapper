@@ -5,6 +5,19 @@ gorm-mapper 是一个基于gorm的便捷映射器，更加方便的进行数据�
 
 <br>
 
+**依赖**
+1、gorm v2
+
+
+<br>
+
+**安装**
+```
+    go get -u github.com/Rgss/gorm-mapper
+```
+
+<br>
+
 **数据库基本操作**
 
 ```
@@ -64,7 +77,7 @@ type User struct {
  //testMappser.DeleteBySearchBuilder(builder)
 
  ```
- 
+ <br>
  
  **Where**
  结构体Where是一个基于map的实现，主要用于搜索条件的构建。
@@ -79,7 +92,7 @@ type User struct {
  where.AddOperator(gormmapper.OperatorGT("create_time", 100)).AddOperator(gormmapper.OperatorEQ("status", 1))
  
  ```
-   
+ <br>  
    
  **SearchBuilder**
  结构体SearchBuilder主要用于mapper中sql各属性映射的构建起。
@@ -91,7 +104,7 @@ type User struct {
  # 格式化条件生成
  builder.build()
 ```
-   
+ <br>  
    
  **MapperGenrator**
  用于根据数据表结构，生成对象实体的生成器。
@@ -104,4 +117,7 @@ type User struct {
  gen.Start()
 ```
  
- 
+ <br>
+   
+ **其它**
+ 欢迎issues
