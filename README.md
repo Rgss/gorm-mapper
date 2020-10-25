@@ -31,7 +31,7 @@ type User struct {
  }
 
  func (User) TableName() string {  
- 	&nbsp;&nbsp;&nbsp;&nbsp;return "user"  
+    return "user"  
  }  
  
  type TestMapper struct {
