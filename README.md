@@ -18,7 +18,7 @@ go get -u github.com/Rgss/gorm-mapper
 
 <br>
 
-**数据库基本操作**  
+## 数据库基本操作    
 
 ```
 type User struct {  
@@ -79,7 +79,7 @@ type User struct {
  ```
  <br>
  
- **Where**  
+## Where    
  结构体Where是一个基于map的实现，主要用于搜索条件的构建。
  ```
  # 初始化 
@@ -94,7 +94,7 @@ type User struct {
  ```
  <br>  
    
- **SearchBuilder**  
+## earchBuilder  
  结构体SearchBuilder主要用于mapper中sql各属性映射的构建起。
  ```
  # 初始化
