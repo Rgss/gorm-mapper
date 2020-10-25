@@ -54,12 +54,12 @@ type User struct {
  //testMapper.SelectOneBySearchBuilder(builder, &user)
  //testMapper.SelectByPrimaryKey(1)
  
- # 分页读取数据
+ # 读取多条数据 
  //users := make([]User{}, 0)
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
  //builder.Where(where).Debug().Build()
  //testMapper.SelectBySearchBuilder(builder, &users) // 多条读取
- //_, pager := testMapper.SelectPageBySearchBuilder(builder, &users)
+ //_, pager := testMapper.SelectPageBySearchBuilder(builder, &users) //分页读取
  
  # 更新数据
  //user := new(User)
@@ -102,11 +102,11 @@ type User struct {
  builder.Where(where).Debug().Page(1).Sort("id", "desc").Sort("create_time", "desc")
 
  # 格式化条件生成
- builder.build()
+ builder.Build()
 ```
  <br>  
    
- **MapperGenrator**  
+ ## MapperGenrator  
  用于根据数据表结构，生成对象实体的生成器。
  ```
  # 初始化
