@@ -57,7 +57,7 @@ type User struct {
  //builder.Where(where).Debug().Build()
  //testMapper.UpdateBySearchBuilder(builder, user)  // 根据SearchBuilder修改
 
- // 删除数据
+ # 删除数据
  //testMapper.DeleteByPrimaryKey(1)
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1"))
  //builder.Where(where).Limit(1).Debug().Build()
