@@ -14,7 +14,7 @@ const maxSize = 10000
 const defaultSize = 10
 
 // 搜索条件构建器
-type SearchBuilder struct {
+type Searcher struct {
 	page        int
 	size        int
 	limit       int
@@ -35,8 +35,8 @@ type SearchBuilder struct {
  * @param
  * @return
  */
-func Builder(entity interface{}) *SearchBuilder {
-	return &SearchBuilder{
+func SearcherBuilder(entity interface{}) *Searcher {
+	return &Searcher{
 		Entity:      entity,
 		sort:        make(map[string]string),
 		parsedWhere: make(map[string]interface{}),
@@ -49,7 +49,7 @@ func Builder(entity interface{}) *SearchBuilder {
  * @param where
  * @return
  */
-func (sb *SearchBuilder) Where(where *Where) *SearchBuilder {
+func (sb *Searcher) Where(where *Where) *Searcher {
 	sb.where = where
 	return sb
 }
@@ -61,7 +61,7 @@ func (sb *SearchBuilder) Where(where *Where) *SearchBuilder {
  * @param
  * @return
  */
-func (sb *SearchBuilder) Sort(column string, sortType string) *SearchBuilder {
+func (sb *Searcher) Sort(column string, sortType string) *Searcher {
 	sb.sort[column] = sortType
 	return sb
 }
@@ -72,7 +72,7 @@ func (sb *SearchBuilder) Sort(column string, sortType string) *SearchBuilder {
  * @param
  * @return
  */
-func (sb *SearchBuilder) Field(fields interface{}) *SearchBuilder {
+func (sb *Searcher) Field(fields interface{}) *Searcher {
 	sb.fields = fields
 	return sb
 }
@@ -83,7 +83,7 @@ func (sb *SearchBuilder) Field(fields interface{}) *SearchBuilder {
  * @param
  * @return
  */
-func (sb *SearchBuilder) Page(page int) *SearchBuilder {
+func (sb *Searcher) Page(page int) *Searcher {
 	sb.page = page
 	return sb
 }
@@ -93,7 +93,7 @@ func (sb *SearchBuilder) Page(page int) *SearchBuilder {
  * @param
  * @return
  */
-func (sb *SearchBuilder) Size(size int) *SearchBuilder {
+func (sb *Searcher) Size(size int) *Searcher {
 	sb.size = size
 	return sb
 }
@@ -103,7 +103,7 @@ func (sb *SearchBuilder) Size(size int) *SearchBuilder {
  * @param where
  * @return
  */
-func (sb *SearchBuilder) Debug() *SearchBuilder {
+func (sb *Searcher) Debug() *Searcher {
 	sb.debug = true
 	return sb
 }
@@ -113,7 +113,7 @@ func (sb *SearchBuilder) Debug() *SearchBuilder {
  * @param where
  * @return
  */
-func (sb *SearchBuilder) Limit(limit int) *SearchBuilder {
+func (sb *Searcher) Limit(limit int) *Searcher {
 	sb.limit = limit
 	return sb
 }
@@ -123,7 +123,7 @@ func (sb *SearchBuilder) Limit(limit int) *SearchBuilder {
  * @param where
  * @return
  */
-func (sb *SearchBuilder) Build() *SearchBuilder {
+func (sb *Searcher) Build() *Searcher {
 	sb.ParseWhere()
 	return sb
 }
@@ -133,7 +133,7 @@ func (sb *SearchBuilder) Build() *SearchBuilder {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetSize() int {
+func (sb *Searcher) GetSize() int {
 	if sb.size <= 0 {
 		return defaultSize
 	}
@@ -150,7 +150,7 @@ func (sb *SearchBuilder) GetSize() int {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetPage() int {
+func (sb *Searcher) GetPage() int {
 	if sb.page <= 0 {
 		return 1
 	}
@@ -167,7 +167,7 @@ func (sb *SearchBuilder) GetPage() int {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetMaxPage() int {
+func (sb *Searcher) GetMaxPage() int {
 	if sb.maxPage > 0 {
 		return sb.maxPage
 	}
@@ -179,7 +179,7 @@ func (sb *SearchBuilder) GetMaxPage() int {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetMaxSize() int {
+func (sb *Searcher) GetMaxSize() int {
 	if sb.maxSize > 0 {
 		return sb.maxSize
 	}
@@ -191,7 +191,7 @@ func (sb *SearchBuilder) GetMaxSize() int {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetSort() map[string]string {
+func (sb *Searcher) GetSort() map[string]string {
 	return sb.sort
 }
 
@@ -200,7 +200,7 @@ func (sb *SearchBuilder) GetSort() map[string]string {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetGroup() string {
+func (sb *Searcher) GetGroup() string {
 	if sb.group == nil {
 		return ""
 	}
@@ -212,7 +212,7 @@ func (sb *SearchBuilder) GetGroup() string {
  * @param
  * @return
  */
-func (sb *SearchBuilder) getDebug() bool {
+func (sb *Searcher) getDebug() bool {
 	return sb.debug
 }
 
@@ -221,7 +221,7 @@ func (sb *SearchBuilder) getDebug() bool {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetWhere() interface{} {
+func (sb *Searcher) GetWhere() interface{} {
 	if sb.where == nil {
 		return make(map[string]interface{})
 	}
@@ -233,7 +233,7 @@ func (sb *SearchBuilder) GetWhere() interface{} {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetParsedWhere() map[string]interface{} {
+func (sb *Searcher) GetParsedWhere() map[string]interface{} {
 	return sb.parsedWhere
 }
 
@@ -242,7 +242,7 @@ func (sb *SearchBuilder) GetParsedWhere() map[string]interface{} {
  * @param
  * @return
  */
-func (sb *SearchBuilder) GetParsedValue() map[string]interface{} {
+func (sb *Searcher) GetParsedValue() map[string]interface{} {
 	return sb.parsedValue
 }
 
@@ -251,7 +251,7 @@ func (sb *SearchBuilder) GetParsedValue() map[string]interface{} {
  * @param where
  * @return
  */
-func (sb *SearchBuilder) ParseWhere() {
+func (sb *Searcher) ParseWhere() {
 	where := sb.where.Iterator()
 	for k, v := range where {
 		sb.parseOperator(k, v)
@@ -263,7 +263,7 @@ func (sb *SearchBuilder) ParseWhere() {
  * @param where
  * @return
  */
-func (sb *SearchBuilder) parseOperator(key string, val interface{}) string {
+func (sb *Searcher) parseOperator(key string, val interface{}) string {
 	var op string
 	var rKey string
 	index := strings.LastIndex(key, "_")

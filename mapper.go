@@ -7,9 +7,13 @@ import (
 	"strings"
 )
 
+// db instance
+var db *gorm.DB
+
+// mapper
 type Mapper struct {
 	ModelEntity  interface{}
-	Builder      *SearchBuilder
+	Builder      *Searcher
 	gdb          *gorm.DB
 	upFields     []string // 更新字å段
 	selectFields []string // 查询字段
@@ -73,7 +77,7 @@ func (m *Mapper) InsertSelective(entity interface{}) int64 {
  * @param
  * @return
  */
-func (m *Mapper) SearchBuilder(builder *SearchBuilder) *Mapper {
+func (m *Mapper) Searcher(builder *Searcher) *Mapper {
 	m.Builder = builder
 	return m
 }
@@ -91,12 +95,12 @@ func (m *Mapper) SelectByPrimaryKey(id int, entity interface{}) error {
 }
 
 /**
- * 根据SearchBuilder查询单个数据
+ * 根据Searcher查询单个数据
  * @param
  * @return
  */
-func (m *Mapper) SelectOneBySearchBuilder(builder *SearchBuilder, entities interface{}) error {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) SelectOneBySearcher(builder *Searcher, entities interface{}) error {
+	d := m.buildSearcher(builder)
 	if d.Error != nil {
 		return d.Error
 	}
@@ -106,12 +110,12 @@ func (m *Mapper) SelectOneBySearchBuilder(builder *SearchBuilder, entities inter
 }
 
 /**
- * 根据SearchBuilder查询
+ * 根据Searcher查询
  * @param
  * @return
  */
-func (m *Mapper) SelectBySearchBuilder(builder *SearchBuilder, entities interface{}) error {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) SelectBySearcher(builder *Searcher, entities interface{}) error {
+	d := m.buildSearcher(builder)
 	d = d.Limit(builder.GetSize())
 	if d.Error != nil {
 		return d.Error
@@ -121,12 +125,12 @@ func (m *Mapper) SelectBySearchBuilder(builder *SearchBuilder, entities interfac
 }
 
 /**
- * 根据SearchBuilder分页查询
+ * 根据Searcher分页查询
  * @param
  * @return
  */
-func (m *Mapper) SelectPageBySearchBuilder(builder *SearchBuilder, entities interface{}) (error, *Pager) {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) SelectPageBySearcher(builder *Searcher, entities interface{}) (error, *Pager) {
+	d := m.buildSearcher(builder)
 
 	pager := PagerBuilder()
 	if d.Error != nil {
@@ -209,13 +213,13 @@ func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
 }
 
 /**
- * 根据SearchBuilder更新
+ * 根据Searcher更新
  * 注：本方法不支持全局更新，无条件限制时，将返回ErrMissingWhereClause错误。
  * @param
  * @return
  */
-func (m *Mapper) UpdateBySearchBuilder(builder *SearchBuilder, entity interface{}) int64 {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) UpdateBySearcher(builder *Searcher, entity interface{}) int64 {
+	d := m.buildSearcher(builder)
 	d = d.Updates(entity)
 	if d.Error != nil {
 		return 0
@@ -224,13 +228,13 @@ func (m *Mapper) UpdateBySearchBuilder(builder *SearchBuilder, entity interface{
 }
 
 /**
- * 根据SearchBuilder更新
+ * 根据Searcher更新
  * 注：本方法不支持全局更新，无条件限制时，将返回ErrMissingWhereClause错误。
  * @param
  * @return
  */
-func (m *Mapper) UpdateSelectiveBySearchBuilder(builder *SearchBuilder, entity interface{}) int64 {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) UpdateSelectiveBySearcher(builder *Searcher, entity interface{}) int64 {
+	d := m.buildSearcher(builder)
 	d = d.UpdateColumns(entity)
 	if d.Error != nil {
 		return 0
@@ -239,13 +243,13 @@ func (m *Mapper) UpdateSelectiveBySearchBuilder(builder *SearchBuilder, entity i
 }
 
 /**
- * 根据SearchBuilder更新
+ * 根据Searcher更新
  * 注：本方法支持全局更新
  * @param
  * @return
  */
-func (m *Mapper) UpdateGlobalBySearchBuilder(builder *SearchBuilder, entity interface{}) int64 {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) UpdateGlobalBySearcher(builder *Searcher, entity interface{}) int64 {
+	d := m.buildSearcher(builder)
 	d = d.Session(&gorm.Session{AllowGlobalUpdate: true}).Updates(entity)
 	if d.Error != nil {
 		return 0
@@ -254,12 +258,12 @@ func (m *Mapper) UpdateGlobalBySearchBuilder(builder *SearchBuilder, entity inte
 }
 
 /**
- * 根据SearchBuilder删除
+ * 根据Searcher删除
  * @param
  * @return
  */
-func (m *Mapper) DeleteBySearchBuilder(builder *SearchBuilder) int64 {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) DeleteBySearcher(builder *Searcher) int64 {
+	d := m.buildSearcher(builder)
 	e := d.Delete(m.ModelEntity).Error
 	if e != nil {
 		return 0
@@ -268,12 +272,12 @@ func (m *Mapper) DeleteBySearchBuilder(builder *SearchBuilder) int64 {
 }
 
 /**
- * 根据SearchBuilder删除， 允许全局删除
+ * 根据Searcher删除， 允许全局删除
  * @param
  * @return
  */
-func (m *Mapper) DeleteGlobalBySearchBuilder(builder *SearchBuilder) int64 {
-	d := m.buildSearchBuilder(builder)
+func (m *Mapper) DeleteGlobalBySearcher(builder *Searcher) int64 {
+	d := m.buildSearcher(builder)
 	e := d.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(m.ModelEntity).Error
 	if e != nil {
 		return 0
@@ -296,13 +300,13 @@ func (m *Mapper) DeleteByPrimaryKey(id int) int64 {
 }
 
 /**
- * 根据searchbuilder统计数量
+ * 根据Searcher统计数量
  * @param
  * @return
  */
-func (m *Mapper) CountBySearchBuilder(builder *SearchBuilder) int64 {
+func (m *Mapper) CountBySearcher(builder *Searcher) int64 {
 	var count int64
-	d := m.buildSearchBuilder(builder)
+	d := m.buildSearcher(builder)
 	e := d.Count(&count).Error
 	if e != nil {
 		return 0
@@ -315,7 +319,7 @@ func (m *Mapper) CountBySearchBuilder(builder *SearchBuilder) int64 {
  * @param
  * @return
  */
-func (m *Mapper) IncrBySearchBuilder(column string, step int, where interface{}) {
+func (m *Mapper) IncrBySearcher(column string, step int, where interface{}) {
 
 }
 
@@ -324,7 +328,7 @@ func (m *Mapper) IncrBySearchBuilder(column string, step int, where interface{})
  * @param
  * @return
  */
-func (m *Mapper) DecrBySearchBuilder(column string, step int, where interface{}) {
+func (m *Mapper) DecrBySearcher(column string, step int, where interface{}) {
 
 }
 
@@ -393,8 +397,8 @@ func (m *Mapper) PreSelectFields(fields []string) *Mapper {
  * @param
  * @return
  */
-func (m *Mapper) buildOrder(builder *SearchBuilder, d *gorm.DB) *gorm.DB {
-	sortQuery := m.ParseSortBySearchBuilder(builder)
+func (m *Mapper) buildOrder(builder *Searcher, d *gorm.DB) *gorm.DB {
+	sortQuery := m.ParseSortBySearcher(builder)
 	if len(sortQuery) > 0 {
 		d.Order(sortQuery)
 	}
@@ -406,7 +410,7 @@ func (m *Mapper) buildOrder(builder *SearchBuilder, d *gorm.DB) *gorm.DB {
  * @param
  * @return
  */
-func (m *Mapper) buildSearchBuilder(builder *SearchBuilder) *gorm.DB {
+func (m *Mapper) buildSearcher(builder *Searcher) *gorm.DB {
 	d := m.db()
 
 	if builder.Entity != nil {
@@ -415,14 +419,14 @@ func (m *Mapper) buildSearchBuilder(builder *SearchBuilder) *gorm.DB {
 	}
 
 	// where
-	queryValue := m.ParseQueryAndValueBySearchBuilder(builder)
+	queryValue := m.ParseQueryAndValueBySearcher(builder)
 	//log.Printf("queryValue: %v", queryValue)
 	if len(queryValue.Query) > 0 {
 		d = d.Where(queryValue.Query, queryValue.Value...)
 	}
 
 	// order
-	sortQuery := m.ParseSortBySearchBuilder(builder)
+	sortQuery := m.ParseSortBySearcher(builder)
 	if len(sortQuery) > 0 {
 		d = d.Order(sortQuery)
 	}
@@ -436,7 +440,7 @@ func (m *Mapper) buildSearchBuilder(builder *SearchBuilder) *gorm.DB {
 }
 
 // 搜索条件
-type SearchBuilderQueryValue struct {
+type SearcherQueryValue struct {
 	Query string
 	Value []interface{}
 }
@@ -446,10 +450,10 @@ type SearchBuilderQueryValue struct {
  * @param
  * @return
  */
-func (m *Mapper) ParseQueryAndValueBySearchBuilder(builder *SearchBuilder) *SearchBuilderQueryValue {
+func (m *Mapper) ParseQueryAndValueBySearcher(builder *Searcher) *SearcherQueryValue {
 	parsedWhere := builder.GetParsedWhere()
 	if len(parsedWhere) <= 0 {
-		return &SearchBuilderQueryValue{}
+		return &SearcherQueryValue{}
 	}
 
 	parsedValue := builder.GetParsedValue()
@@ -464,7 +468,7 @@ func (m *Mapper) ParseQueryAndValueBySearchBuilder(builder *SearchBuilder) *Sear
 	}
 
 	whereQuery = strings.Trim(whereQuery, " AND ")
-	queryWhere := &SearchBuilderQueryValue{
+	queryWhere := &SearcherQueryValue{
 		Query: whereQuery,
 		Value: whereValue,
 	}
@@ -476,7 +480,7 @@ func (m *Mapper) ParseQueryAndValueBySearchBuilder(builder *SearchBuilder) *Sear
  * @param
  * @return
  */
-func (m *Mapper) ParseSortBySearchBuilder(builder *SearchBuilder) string {
+func (m *Mapper) ParseSortBySearcher(builder *Searcher) string {
 	if len(builder.GetSort()) <= 0 {
 		return ""
 	}
