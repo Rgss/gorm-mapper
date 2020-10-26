@@ -387,7 +387,7 @@ func (mg *MapperGenerator) TemplateFileHeader(packageName string) string {
 func (mg *MapperGenerator) TemplateEntityFile() string {
 	tpl := ""
 	tpl += "\r\n// gorm-mapper auto generate entity\r\n"
-	tpl += "// struct \r\n"
+	tpl += "// {{StructName}} \r\n"
 	tpl += "type {{StructName}} struct {\r\n"
 	tpl += "{{columns}}"
 	tpl += "}"

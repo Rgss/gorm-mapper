@@ -585,5 +585,5 @@ func (m *Mapper) release() {
  * @return
  */
 func GDB() *gorm.DB {
-	return Conn().DB()
+	return Connection().DB()
 }

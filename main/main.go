@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Rgss/gorm-mapper"
+	"gorm.io/gorm"
 	"log"
 )
 
@@ -111,7 +112,5 @@ func initDB() {
 		EnableLog:    false,
 	}
 
-	configs := make(map[string]*gormmapper.DBConfig)
-	configs["default"] = config
-	gormmapper.Initialize(configs)
+	gormmapper.CreateConnection("default", config, &gorm.Config{})
 }
