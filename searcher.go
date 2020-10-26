@@ -24,7 +24,7 @@ type Searcher struct {
 	parsedWhere map[string]interface{}
 	parsedValue map[string]interface{}
 	fields      interface{}
-	Entity      interface{}
+	entity      interface{}
 	debug       bool
 	maxPage     int
 	maxSize     int
@@ -32,12 +32,17 @@ type Searcher struct {
 
 /**
  * 创建搜索构建器
- * @param
+ * @param args	实体对象|缺省项
  * @return
  */
-func SearcherBuilder(entity interface{}) *Searcher {
+func SearcherBuilder(args ...interface{}) *Searcher {
+	var entity interface{}
+	if len(args) > 0 {
+		entity = args[0]
+	}
+
 	return &Searcher{
-		Entity:      entity,
+		entity:      entity,
 		sort:        make(map[string]string),
 		parsedWhere: make(map[string]interface{}),
 		parsedValue: make(map[string]interface{}),
@@ -115,6 +120,16 @@ func (sb *Searcher) Debug() *Searcher {
  */
 func (sb *Searcher) Limit(limit int) *Searcher {
 	sb.limit = limit
+	return sb
+}
+
+/**
+ * 设置实体类型
+ * @param
+ * @return
+ */
+func (sb *Searcher) Entity(entity interface{}) *Searcher {
+	sb.entity = entity
 	return sb
 }
 
