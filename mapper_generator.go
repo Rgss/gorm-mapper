@@ -10,10 +10,13 @@ import (
 // mapper 生成器
 // 主要用于根据表结构生成实体struct, 数据库映射层
 type MapperGenerator struct {
-	mapper        Mapper
-	tables        []string
-	entityPath    string
-	entityPackage string
+	mapper                  Mapper   // 映射器
+	tables                  []string // 表名
+	entityPath              string   // 实体路径
+	entityPackage           string   // 实体包名
+	mapperPath              string   // 映射器路径
+	mapperPackage           string   // 映射器包名
+	mapperPathAutoSignleton bool     // 是否自动单例实例化
 }
 
 // 表结构
@@ -71,19 +74,63 @@ func (mg *MapperGenerator) EntityPath(name string) {
 }
 
 /**
+ * 实体映射器包名
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) MapperPackage(name string) {
+	mg.mapperPackage = name
+}
+
+/**
+ * 实体映射器包名路径
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) MapperPath(name string) {
+	mg.mapperPath = name
+}
+
+/**
+ * 自动单例初始化
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) MapperPathAutoSignleton(flag bool) {
+	mg.mapperPathAutoSignleton = flag
+}
+
+/**
  * 启动
  * @param
  * @return
  */
 func (mg *MapperGenerator) Start() {
+	log.Printf("gormmapper generator start.")
 	tables := mg.ShowTables()
 	for _, t := range tables {
-		log.Printf("t: %v", t)
-		createTableSql := mg.ShowCreateTableSql(t)
-		to := mg.ParseSQL(createTableSql)
-		mg.CreateEntity(to)
+		s := mg.ShowCreateTableSql(t)
+		to := mg.ParseSQL(s)
 
+		// 创建实体
+		err := mg.CreateEntity(to)
+		if err != nil {
+			log.Printf("create table ? err: %v", to.Name, err.Error())
+		} else {
+			log.Printf("create table %v ok", to.Name)
+		}
+
+		// 创建映射器
+		if len(mg.mapperPackage) > 0 && len(mg.mapperPath) > 0 {
+			err = mg.CreateEntityMapper(to)
+			if err != nil {
+				log.Printf("create mapper ? err: %v", to.Name, err.Error())
+			} else {
+				log.Printf("create mapper %v ok", to.Name)
+			}
+		}
 	}
+	log.Printf("gormmapper generator end.")
 }
 
 /**
@@ -93,10 +140,7 @@ func (mg *MapperGenerator) Start() {
  */
 func (mg *MapperGenerator) ShowTables() []string {
 	tables := make([]string, 0)
-	mg.mapper.DB().Debug().Raw("SHOW TABLES").Scan(&tables)
-
-	log.Printf("tables: %v", tables)
-
+	mg.mapper.DB().Raw("SHOW TABLES").Scan(&tables)
 	return tables
 }
 
@@ -107,7 +151,7 @@ func (mg *MapperGenerator) ShowTables() []string {
  */
 func (mg *MapperGenerator) ShowCreateTableSql(tablename string) string {
 	t := make(map[string]interface{})
-	mg.mapper.DB().Debug().Raw("SHOW CREATE TABLE " + tablename).Scan(&t)
+	mg.mapper.DB().Raw("SHOW CREATE TABLE " + tablename).Scan(&t)
 	s := ""
 	if _, ok := t["Create Table"]; ok {
 		s = t["Create Table"].(string)
@@ -208,23 +252,39 @@ func (mg *MapperGenerator) ParseColumn(s string, tableObject *TableObject) *Tabl
  * @param
  * @return
  */
-func (mg *MapperGenerator) CreateEntity(tableObject *TableObject) {
-	tpl := ""
-	tpl += mg.TemplateFileHeader()
-	tpl += mg.TemplateFile()
+func (mg *MapperGenerator) CreateEntity(tableObject *TableObject) error {
+	tpl := mg.TemplateFileHeader(mg.entityPackage)
+	tpl += mg.TemplateEntityFile()
 
 	structName := mg.FormatColumnAndTagName(tableObject.Name, true)
 	tableName := strings.ToLower(tableObject.Name)
 	tpl = strings.Replace(tpl, "{{StructName}}", structName, -1)
 	tpl = strings.Replace(tpl, "{{TableName}}", tableName, -1)
 
-	columnTpl := mg.TemplateColumn(tableObject.Columns)
-	tpl = strings.Replace(tpl, "{{columns}}", columnTpl, -1)
+	ctpl := mg.TemplateColumn(tableObject.Columns)
+	tpl = strings.Replace(tpl, "{{columns}}", ctpl, -1)
 
-	log.Printf("\r\n\r\ntpl:\r\n%v", tpl)
+	path := mg.SavePath(mg.entityPath, tableObject.Name)
+	return mg.SaveFile(path, tpl)
+}
 
-	path := mg.SavePath(tableObject.Name)
-	mg.SaveFile(path, tpl)
+/**
+ * 创建实体映射器
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) CreateEntityMapper(tableObject *TableObject) error {
+	tpl := mg.TemplateFileHeader(mg.mapperPackage)
+	tpl += mg.TemplateMapperFile()
+
+	structName := mg.FormatColumnAndTagName(tableObject.Name, false)
+	structInstance := mg.FormatColumnAndTagName(tableObject.Name, true)
+	packageName := mg.FormatColumnAndTagName(mg.mapperPackage, true)
+	tpl = strings.Replace(tpl, "{{StructName}}", structName+packageName, -1)
+	tpl = strings.Replace(tpl, "{{StructInstance}}", structInstance+packageName, -1)
+
+	path := mg.SavePath(mg.mapperPath, structName+packageName)
+	return mg.SaveFile(path, tpl)
 }
 
 /**
@@ -232,20 +292,20 @@ func (mg *MapperGenerator) CreateEntity(tableObject *TableObject) {
  * @param
  * @return
  */
-func (mg *MapperGenerator) SaveFile(path string, content string) bool {
+func (mg *MapperGenerator) SaveFile(path string, content string) error {
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Printf("create entity file error: %v", err.Error())
-		return false
+		return err
 	}
 
 	defer file.Close()
 	_, err = file.WriteString(content)
 	if err != nil {
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }
 
 /**
@@ -253,9 +313,9 @@ func (mg *MapperGenerator) SaveFile(path string, content string) bool {
  * @param
  * @return
  */
-func (mg *MapperGenerator) SavePath(name string) string {
-	mg.CheckPath()
-	return mg.entityPath + "/" + name + ".go"
+func (mg *MapperGenerator) SavePath(path string, name string) string {
+	mg.CheckPath(path)
+	return path + "/" + name + ".go"
 }
 
 /**
@@ -263,11 +323,11 @@ func (mg *MapperGenerator) SavePath(name string) string {
  * @param
  * @return
  */
-func (mg *MapperGenerator) CheckPath() {
-	s, err := os.Stat(mg.entityPath)
+func (mg *MapperGenerator) CheckPath(path string) {
+	s, err := os.Stat(path)
 	if err != nil || !s.IsDir() {
-		err = os.MkdirAll(mg.entityPath, os.ModePerm)
-		log.Printf("create path %v error: %v", mg.entityPath, err)
+		err = os.MkdirAll(path, os.ModePerm)
+		log.Printf("create path %v error: %v", path, err)
 	}
 }
 
@@ -276,8 +336,8 @@ func (mg *MapperGenerator) CheckPath() {
  * @param
  * @return
  */
-func (mg *MapperGenerator) TemplateFileHeader() string {
-	comment := "package " + mg.entityPackage + "\r\n"
+func (mg *MapperGenerator) TemplateFileHeader(packageName string) string {
+	comment := "package " + packageName + "\r\n"
 	return comment
 }
 
@@ -286,7 +346,7 @@ func (mg *MapperGenerator) TemplateFileHeader() string {
  * @param
  * @return
  */
-func (mg *MapperGenerator) TemplateFile() string {
+func (mg *MapperGenerator) TemplateEntityFile() string {
 	tpl := ""
 	tpl += "\r\n// gorm-mapper auto generate entity\r\n"
 	tpl += "// struct \r\n"
@@ -298,6 +358,28 @@ func (mg *MapperGenerator) TemplateFile() string {
 	tpl += "\r\nfunc (e {{StructName}}) TableName() string {\r\n"
 	tpl += "    return \"{{TableName}}\"\r\n"
 	tpl += "}\r\n\r\n"
+	return tpl
+}
+
+/**
+ * 文件模版
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) TemplateMapperFile() string {
+	tpl := "\r\nimport gormmapper \"github.com/Rgss/gorm-mapper\"\r\n\r\n"
+
+	if mg.mapperPathAutoSignleton {
+		tpl += "// global instance\r\n"
+		tpl += "var {{StructInstance}} = &{{StructName}}{}\r\n\r\n"
+	}
+
+	tpl += "// the mapper is generated by gorm-mapper automatically\r\n"
+	tpl += "// {{StructName}} \r\n"
+	tpl += "type {{StructName}} struct {\r\n"
+	tpl += "    gormmapper.Mapper\r\n"
+	tpl += "}\r\n"
+
 	return tpl
 }
 

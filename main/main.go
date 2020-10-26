@@ -13,6 +13,7 @@ func main() {
 	tem := &TEM{}
 	builder := gormmapper.Builder(&user)
 	log.Printf("builder: %v", builder)
+	log.Printf("tem: %v", tem)
 
 	//user.Username = "imp"
 	//user.Password = "123456"
@@ -62,10 +63,14 @@ func main() {
 	m := gormmapper.MapperBuilder()
 	gen := gormmapper.MapperGeneratorBuilder(*m)
 	gen.EntityPackage("entity")
-	gen.EntityPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/entity")
+	gen.EntityPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\entity")
+	//gen.MapperPackage("repository")
+	//gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\repository")
+	gen.MapperPackage("mapper")
+	gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\mapper")
+	gen.MapperPathAutoSignleton(true)
 	gen.Start()
 
-	log.Printf("tem: %v", tem)
 }
 
 type TEM struct {
@@ -88,7 +93,7 @@ func (User) TableName() string {
 func initDB() {
 	config := &gormmapper.DBConfig{
 		User:         "root",
-		Pass:         "123456",
+		Pass:         "",
 		Host:         "127.0.0.1",
 		Port:         3306,
 		DbName:       "test",
