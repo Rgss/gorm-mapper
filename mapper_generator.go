@@ -18,6 +18,8 @@ type MapperGenerator struct {
 	mapperPath              string   // 映射器路径
 	mapperPackage           string   // 映射器包名
 	mapperPathAutoSignleton bool     // 是否自动单例实例化
+	overWrite               bool     // 是否覆盖文件
+	allowTables             []string // 允许生成文件的表
 }
 
 // 表结构
@@ -92,6 +94,24 @@ func (mg *MapperGenerator) MapperPackage(name string) {
  */
 func (mg *MapperGenerator) MapperPath(name string) {
 	mg.mapperPath = name
+}
+
+/**
+ * 需要生成实体和映射器的表， 默认全部
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) AllowTables(tables []string) {
+	mg.allowTables = tables
+}
+
+/**
+ * 是否覆盖生成实体和映射器的文件
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) OverWrite(flag bool) {
+	mg.overWrite = flag
 }
 
 /**
