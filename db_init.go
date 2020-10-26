@@ -10,7 +10,7 @@ var connection *DB
 /**
  * 初始化数据库
  * @param
- * @return 
+ * @return
  */
 func Initialize(configs map[string]*DBConfig) {
 	// 实例化
@@ -20,11 +20,10 @@ func Initialize(configs map[string]*DBConfig) {
 	go Ping()
 }
 
-
 /**
  * 新建db
  * @param
- * @return 
+ * @return
  */
 func NewDB(configs map[string]*DBConfig) *DB {
 	connection = &DB{
@@ -33,13 +32,13 @@ func NewDB(configs map[string]*DBConfig) *DB {
 
 	pool := make(map[string]*gorm.DB, 0)
 	for key, config := range configs {
-		url 	:= connection.getUrl(config)
+		url := connection.getUrl(config)
 		maxIdleConns := config.MaxIdleConns
 		maxOpenConns := config.MaxOpenConns
-		enableLog 	 := config.EnableLog
+		enableLog := config.EnableLog
 
-		cfg := &gorm.Config{};
-		db, err := gorm.Open(mysql.Open(url), cfg);
+		cfg := &gorm.Config{}
+		db, err := gorm.Open(mysql.Open(url), cfg)
 		if err != nil {
 			//app.Logger().Errorf("连接数据库失败 error: %s", err.Error())
 			panic("连接数据库失败 error: " + err.Error())
@@ -71,12 +70,11 @@ func NewDB(configs map[string]*DBConfig) *DB {
 	return connection
 }
 
-
 /**
  * 对外暴露
  * @param
  * @return
  */
-func Connection() *DB {
+func Conn() *DB {
 	return connection
 }

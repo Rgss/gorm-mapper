@@ -40,7 +40,7 @@ type User struct {
 
  user := new(User)
  testMapper := &TestMapper{}
- builder := gormmapper.Builder(&User{})
+ builder := gormmapper.SearcherBuilder(&User{})
 
  # 新增数据
  //user.Username = "imp"
@@ -51,15 +51,15 @@ type User struct {
  //user := new(User)
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
  //builder.Where(where).Debug().Build()
- //testMapper.SelectOneBySearchBuilder(builder, &user)
+ //testMapper.SelectOneBySearcher(builder, &user)
  //testMapper.SelectByPrimaryKey(1)
  
  # 读取多条数据 
  //users := make([]User{}, 0)
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
  //builder.Where(where).Debug().Build()
- //testMapper.SelectBySearchBuilder(builder, &users) // 多条读取
- //_, pager := testMapper.SelectPageBySearchBuilder(builder, &users) //分页读取
+ //testMapper.SelectBySearcher(builder, &users) // 多条读取
+ //_, pager := testMapper.SelectPageBySearcher(builder, &users) //分页读取
  
  # 更新数据
  //user := new(User)
@@ -68,13 +68,13 @@ type User struct {
  //testMapper.UpdateSelectiveByPrimaryKey(1, user) // 选择性字段更新, 为空 0 等不更新
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
  //builder.Where(where).Debug().Build()
- //testMapper.UpdateBySearchBuilder(builder, user)  // 根据SearchBuilder修改
+ //testMapper.UpdateBySearcher(builder, user)  // 根据Searcher修改
 
  # 删除数据
  //testMapper.DeleteByPrimaryKey(1)
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1"))
  //builder.Where(where).Limit(1).Debug().Build()
- //testMappser.DeleteBySearchBuilder(builder)
+ //testMappser.DeleteBySearcher(builder)
 
  ```
  <br>
@@ -94,8 +94,8 @@ type User struct {
  ```
  <br>  
    
-## SearchBuilder  
- 结构体SearchBuilder主要用于mapper中sql各属性映射的构建起。
+## Searcher  
+ 结构体Searcher主要用于mapper中sql各属性映射的构建起。
  ```
  # 初始化
  builder := gormmapper.Builder(&User{});
