@@ -40,7 +40,7 @@ type User struct {
 
  user := new(User)
  testMapper := &TestMapper{}
- builder := gormmapper.Builder(&User{})
+ builder := gormmapper.SearcherBuilder(&User{})
 
  # 新增数据
  //user.Username = "imp"
