@@ -45,6 +45,16 @@ func (m *Mapper) Model(entity interface{}) *Mapper {
 }
 
 /**
+ * 开启debug
+ * @param
+ * @return
+ */
+func (m *Mapper) Debug() *Mapper {
+	m.debug = true
+	return m
+}
+
+/**
  * 插入数据
  * @param	entity	struct|map
  * @return
@@ -159,7 +169,6 @@ func (m *Mapper) SelectPageBySearcher(builder *Searcher, entities interface{}) (
  */
 func (m *Mapper) UpdateByPrimaryKey(id int, entity interface{}) int64 {
 	where := map[string]interface{}{"id": id}
-	m.toMap(entity)
 	d := m.db().Debug().Where(where).Updates(entity)
 	if d.Error != nil {
 		return 0
@@ -520,13 +529,4 @@ func (m *Mapper) release() {
  */
 func GDB() *gorm.DB {
 	return Connection().DB()
-}
-
-/**
- * test
- * @param
- * @return
- */
-func (m *Mapper) M() {
-	log.Printf("mapper.m")
 }

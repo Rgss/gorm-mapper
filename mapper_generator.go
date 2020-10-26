@@ -480,22 +480,20 @@ func (mg *MapperGenerator) columnSpacePad(count int) string {
  */
 func (mg *MapperGenerator) gormColumn(tableColumn *TableColumn) string {
 	tpl := "`gorm:\""
+	tpl += "column:" + tableColumn.Name + ";"
 
+	// PrimaryKey
 	if tableColumn.PrimaryKey {
-		tpl += "primary_key:" + tableColumn.Name + ";"
-	} else {
-		tpl += "column:" + tableColumn.Name + ";"
+		tpl += " primaryKey;"
 	}
-
-	// log.Printf("tableColumn.PlainSQL: %v", tableColumn.PlainSQL)
 
 	// not null
 	if strings.Contains(tableColumn.PlainSQL, "NOT NULL") {
-		tpl += " NOT NULL;"
+		tpl += " not null;"
 	}
 
 	if strings.Contains(tableColumn.PlainSQL, "AUTO_INCREMENT") {
-		tpl += " AUTO_INCREMENT;"
+		tpl += " autoIncrement;"
 	}
 
 	// default value
@@ -517,7 +515,7 @@ func (mg *MapperGenerator) gormColumn(tableColumn *TableColumn) string {
 			}
 		}
 
-		tpl += " DEFAULT:" + v + ";"
+		tpl += " default:" + v + ";"
 	}
 
 	tpl += "\""
