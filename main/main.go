@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/Rgss/gorm-mapper"
+	"github.com/Rgss/gorm-mapper/tests/entity"
+	"github.com/Rgss/gorm-mapper/tests/mapper"
 	"log"
 )
 
@@ -59,6 +61,10 @@ func main() {
 	//tem.SelectBySearchBuilder(builder, &entity)
 	//log.Printf("entity: %v", entity)
 
+	account := &entity.Account{}
+	mapper.AccountMapper.SelectByPrimaryKey(1, account)
+	log.Printf("account: %v", account)
+
 	//
 	m := gormmapper.MapperBuilder()
 	gen := gormmapper.MapperGeneratorBuilder(*m)
@@ -69,7 +75,7 @@ func main() {
 	gen.MapperPackage("mapper")
 	gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\mapper")
 	gen.MapperPathAutoSignleton(true)
-	gen.Start()
+	//gen.Start()
 
 }
 

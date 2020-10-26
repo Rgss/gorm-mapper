@@ -113,18 +113,20 @@ func (mg *MapperGenerator) Start() {
 		to := mg.ParseSQL(s)
 
 		// 创建实体
-		err := mg.CreateEntity(to)
-		if err != nil {
-			log.Printf("create table ? err: %v", to.Name, err.Error())
-		} else {
-			log.Printf("create table %v ok", to.Name)
+		if len(mg.entityPackage) > 0 && len(mg.entityPath) > 0 {
+			err := mg.CreateEntity(to)
+			if err != nil {
+				log.Printf("create table ? err: %v", to.Name, err.Error())
+			} else {
+				log.Printf("create table %v ok", to.Name)
+			}
 		}
 
 		// 创建映射器
 		if len(mg.mapperPackage) > 0 && len(mg.mapperPath) > 0 {
-			err = mg.CreateEntityMapper(to)
-			if err != nil {
-				log.Printf("create mapper ? err: %v", to.Name, err.Error())
+			err2 := mg.CreateEntityMapper(to)
+			if err2 != nil {
+				log.Printf("create mapper ? err: %v", to.Name, err2.Error())
 			} else {
 				log.Printf("create mapper %v ok", to.Name)
 			}
