@@ -1,6 +1,7 @@
 package gormmapper
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -21,11 +22,13 @@ type MapperGenerator struct {
 
 // 表结构
 type TableObject struct {
-	Columns    []*TableColumn
-	Comment    string
-	Name       string
-	PlainSQL   string
-	PrimaryKey string
+	Columns             []*TableColumn
+	Comment             string
+	Name                string
+	PlainSQL            string
+	PrimaryKey          string
+	MaxColumnLength     int
+	MaxColumnTypeLength int
 }
 
 // 表字段
@@ -239,8 +242,21 @@ func (mg *MapperGenerator) ParseColumn(s string, tableObject *TableObject) *Tabl
 
 	columnName := cds[0]
 	tableColumn.Name = strings.Replace(columnName, "`", "", -1)
+	tableColumn.Name = strings.TrimSpace(tableColumn.Name)
 	columnType := cds[1]
 	tableColumn.Type = columnType
+
+	// 字段最大长度
+	l := len(strings.Replace(tableColumn.Name, "_", "", -1))
+	if tableObject.MaxColumnLength < l {
+		tableObject.MaxColumnLength = l
+	}
+	// 字段类型最大长度
+	ct := mg.ConvertType(columnType)
+	l2 := len(ct)
+	if tableObject.MaxColumnTypeLength < l2 {
+		tableObject.MaxColumnTypeLength = l2
+	}
 
 	if strings.Compare(tableObject.PrimaryKey, tableColumn.Name) == 0 {
 		tableColumn.PrimaryKey = true
@@ -263,7 +279,7 @@ func (mg *MapperGenerator) CreateEntity(tableObject *TableObject) error {
 	tpl = strings.Replace(tpl, "{{StructName}}", structName, -1)
 	tpl = strings.Replace(tpl, "{{TableName}}", tableName, -1)
 
-	ctpl := mg.TemplateColumn(tableObject.Columns)
+	ctpl := mg.TemplateColumn(tableObject)
 	tpl = strings.Replace(tpl, "{{columns}}", ctpl, -1)
 
 	path := mg.SavePath(mg.entityPath, tableObject.Name)
@@ -390,17 +406,23 @@ func (mg *MapperGenerator) TemplateMapperFile() string {
  * @param
  * @return
  */
-func (mg *MapperGenerator) TemplateColumn(columns []*TableColumn) string {
+func (mg *MapperGenerator) TemplateColumn(tableObject *TableObject) string {
+	columns := tableObject.Columns
 	tpl := ""
 	for _, v := range columns {
 		if v == nil || len(v.Name) <= 0 {
 			continue
 		}
 
-		varType := mg.ConvertType(v.Type)
-		columnTag := mg.ColumnStructTag(v)
-		column := mg.FormatColumnAndTagName(v.Name, true)
-		tpl += "    " + column + "\t" + varType + columnTag + "\r\n"
+		c := mg.FormatColumnAndTagName(v.Name, true)
+		vt := mg.ConvertType(v.Type)
+		ct := mg.ColumnStructTag(v)
+
+		i := tableObject.MaxColumnLength - len(c)
+		csp := mg.columnSpacePad(i)
+		i2 := tableObject.MaxColumnTypeLength - len(vt)
+		csp2 := mg.columnSpacePad(i2)
+		tpl += fmt.Sprintf("    %s %s%s%s %s\r\n", c, csp, vt, csp2, ct)
 	}
 	return tpl
 }
@@ -420,12 +442,24 @@ func (mg *MapperGenerator) ColumnStructTag(tableColumn *TableColumn) string {
 }
 
 /**
+ * 空白填充
+ * @param
+ * @return
+ */
+func (mg *MapperGenerator) columnSpacePad(count int) string {
+	if count <= 0 {
+		return ""
+	}
+	return strings.Repeat(" ", count)
+}
+
+/**
  * gorm tag
  * @param
  * @return
  */
 func (mg *MapperGenerator) gormColumn(tableColumn *TableColumn) string {
-	tpl := "\t`gorm:\""
+	tpl := "`gorm:\""
 
 	if tableColumn.PrimaryKey {
 		tpl += "primary_key:" + tableColumn.Name + ";"
@@ -463,7 +497,7 @@ func (mg *MapperGenerator) gormColumn(tableColumn *TableColumn) string {
 			}
 		}
 
-		tpl += " DEFAULT " + v + ";"
+		tpl += " DEFAULT:" + v + ";"
 	}
 
 	tpl += "\""
