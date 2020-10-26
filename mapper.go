@@ -11,7 +11,7 @@ type Mapper struct {
 	ModelEntity  interface{}
 	Builder      *SearchBuilder
 	gdb          *gorm.DB
-	upFields     []string // 更新字å段
+	updateFields []string // 更新字å段
 	selectFields []string // 查询字段
 
 	debug bool // 是否debug
@@ -46,7 +46,7 @@ func (m *Mapper) Model(entity interface{}) *Mapper {
  * @return
  */
 func (m *Mapper) Insert(entity interface{}) int64 {
-	d := m.db().Debug().Create(entity)
+	d := m.db().Debug().Save(entity)
 	if d.Error != nil {
 		return 0
 	}
@@ -87,6 +87,7 @@ func (m *Mapper) SearchBuilder(builder *SearchBuilder) *Mapper {
 func (m *Mapper) SelectByPrimaryKey(id int, entity interface{}) error {
 	where := map[string]interface{}{"id": id}
 	e := m.db().Model(entity).Where(where).Find(entity).Error
+	m.afterBehaviourCallback()
 	return e
 }
 
@@ -98,10 +99,12 @@ func (m *Mapper) SelectByPrimaryKey(id int, entity interface{}) error {
 func (m *Mapper) SelectOneBySearchBuilder(builder *SearchBuilder, entities interface{}) error {
 	d := m.buildSearchBuilder(builder)
 	if d.Error != nil {
+		m.afterBehaviourCallback()
 		return d.Error
 	}
 
 	e := d.Limit(1).Find(entities).Error
+	m.afterBehaviourCallback()
 	return e
 }
 
@@ -113,11 +116,11 @@ func (m *Mapper) SelectOneBySearchBuilder(builder *SearchBuilder, entities inter
 func (m *Mapper) SelectBySearchBuilder(builder *SearchBuilder, entities interface{}) error {
 	d := m.buildSearchBuilder(builder)
 	d = d.Limit(builder.GetSize())
-	if d.Error != nil {
-		return d.Error
-	}
 
-	return d.Find(entities).Error
+	e := d.Find(entities).Error
+	m.afterBehaviourCallback()
+
+	return e
 }
 
 /**
@@ -130,6 +133,7 @@ func (m *Mapper) SelectPageBySearchBuilder(builder *SearchBuilder, entities inte
 
 	pager := PagerBuilder()
 	if d.Error != nil {
+		m.afterBehaviourCallback()
 		return d.Error, pager
 	}
 
@@ -144,6 +148,8 @@ func (m *Mapper) SelectPageBySearchBuilder(builder *SearchBuilder, entities inte
 	start := (pager.GetPage() - 1) * pager.GetSize()
 	d = d.Limit(builder.GetSize())
 	e := d.Offset(start).Find(entities).Error
+	m.afterBehaviourCallback()
+
 	return e, pager
 }
 
@@ -155,8 +161,18 @@ func (m *Mapper) SelectPageBySearchBuilder(builder *SearchBuilder, entities inte
  */
 func (m *Mapper) UpdateByPrimaryKey(id int, entity interface{}) int64 {
 	where := map[string]interface{}{"id": id}
-	m.toMap(entity)
-	d := m.db().Debug().Where(where).Updates(entity)
+	d := m.db().Debug()
+
+	if len(m.updateFields) > 0 {
+		value := m.ParseUpdateValue(entity)
+		v := value.Value
+		v = append(v, id)
+		d = d.Exec(" UPDATE user SET "+value.Query+" WHERE id = ?", v...)
+	} else {
+		d = d.Where(where).Updates(entity)
+	}
+
+	m.afterBehaviourCallback()
 	if d.Error != nil {
 		return 0
 	}
@@ -202,6 +218,7 @@ func (m *Mapper) toMap(entity interface{}) map[string]interface{} {
 func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
 	where := map[string]interface{}{"id": id}
 	d := m.db().Debug().Where(where).Updates(entity)
+	m.afterBehaviourCallback()
 	if d.Error != nil {
 		return 0
 	}
@@ -209,7 +226,7 @@ func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
 }
 
 /**
- * 根据SearchBuilder更新
+ * 根据SearchBuilder更新, 配合PreUpdateFields一起使用，处理为空字段问题。
  * 注：本方法不支持全局更新，无条件限制时，将返回ErrMissingWhereClause错误。
  * @param
  * @return
@@ -217,6 +234,7 @@ func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
 func (m *Mapper) UpdateBySearchBuilder(builder *SearchBuilder, entity interface{}) int64 {
 	d := m.buildSearchBuilder(builder)
 	d = d.Updates(entity)
+	m.afterBehaviourCallback()
 	if d.Error != nil {
 		return 0
 	}
@@ -232,6 +250,7 @@ func (m *Mapper) UpdateBySearchBuilder(builder *SearchBuilder, entity interface{
 func (m *Mapper) UpdateSelectiveBySearchBuilder(builder *SearchBuilder, entity interface{}) int64 {
 	d := m.buildSearchBuilder(builder)
 	d = d.UpdateColumns(entity)
+	m.afterBehaviourCallback()
 	if d.Error != nil {
 		return 0
 	}
@@ -247,6 +266,7 @@ func (m *Mapper) UpdateSelectiveBySearchBuilder(builder *SearchBuilder, entity i
 func (m *Mapper) UpdateGlobalBySearchBuilder(builder *SearchBuilder, entity interface{}) int64 {
 	d := m.buildSearchBuilder(builder)
 	d = d.Session(&gorm.Session{AllowGlobalUpdate: true}).Updates(entity)
+	m.afterBehaviourCallback()
 	if d.Error != nil {
 		return 0
 	}
@@ -261,6 +281,7 @@ func (m *Mapper) UpdateGlobalBySearchBuilder(builder *SearchBuilder, entity inte
 func (m *Mapper) DeleteBySearchBuilder(builder *SearchBuilder) int64 {
 	d := m.buildSearchBuilder(builder)
 	e := d.Delete(m.ModelEntity).Error
+	m.afterBehaviourCallback()
 	if e != nil {
 		return 0
 	}
@@ -275,6 +296,7 @@ func (m *Mapper) DeleteBySearchBuilder(builder *SearchBuilder) int64 {
 func (m *Mapper) DeleteGlobalBySearchBuilder(builder *SearchBuilder) int64 {
 	d := m.buildSearchBuilder(builder)
 	e := d.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(m.ModelEntity).Error
+	m.afterBehaviourCallback()
 	if e != nil {
 		return 0
 	}
@@ -289,6 +311,7 @@ func (m *Mapper) DeleteGlobalBySearchBuilder(builder *SearchBuilder) int64 {
 func (m *Mapper) DeleteByPrimaryKey(id int) int64 {
 	where := map[string]interface{}{"id": id}
 	d := m.db().Where(where).Delete(m.ModelEntity)
+	m.afterBehaviourCallback()
 	if d.Error != nil {
 		return 0
 	}
@@ -304,6 +327,7 @@ func (m *Mapper) CountBySearchBuilder(builder *SearchBuilder) int64 {
 	var count int64
 	d := m.buildSearchBuilder(builder)
 	e := d.Count(&count).Error
+	m.afterBehaviourCallback()
 	if e != nil {
 		return 0
 	}
@@ -342,8 +366,8 @@ func (m *Mapper) RawQuery(sqlQuery string, entity interface{}) error {
  * @param
  * @return
  */
-func (m *Mapper) RawExec(sqlQuery string) int64 {
-	d := m.db().Debug().Exec(sqlQuery)
+func (m *Mapper) RawExec(sqlQuery string, args []interface{}) int64 {
+	d := m.db().Debug().Exec(sqlQuery, args...)
 	if d.Error != nil {
 		return 0
 	}
@@ -373,8 +397,9 @@ func (m *Mapper) DB() *gorm.DB {
  * @param	fields 更新字段
  * @return
  */
-func (m *Mapper) PreUpdateFields(fields []string) *Mapper {
-	m.upFields = fields
+func (m *Mapper) PreUpdateFields(args ...interface{}) *Mapper {
+	fields := make([]string, 0)
+	m.updateFields = fields
 	return m
 }
 
@@ -441,6 +466,10 @@ type SearchBuilderQueryValue struct {
 	Value []interface{}
 }
 
+// 更新数据
+type SearchBuilderUpdateValue struct {
+}
+
 /**
  * 解析条件
  * @param
@@ -490,6 +519,33 @@ func (m *Mapper) ParseSortBySearchBuilder(builder *SearchBuilder) string {
 }
 
 /**
+ * 解析更新字段
+ * @param
+ * @return
+ */
+func (m *Mapper) ParseUpdateValue(entity interface{}) *SearchBuilderQueryValue {
+	vData := make([]interface{}, 0)
+	kData := ""
+	updateFields := m.updateFields
+	mm := m.toMap(entity)
+	log.Printf("mm: %v", mm)
+	for _, v := range updateFields {
+		if _, exists := mm[v]; exists {
+			kData += v + " = ?,"
+			vData = append(vData, mm[v])
+		}
+	}
+
+	value := &SearchBuilderQueryValue{
+		Query: strings.Trim(kData, ","),
+		Value: vData,
+	}
+	log.Printf("updateFields: %v", updateFields)
+	log.Printf("mm: %v", mm)
+	return value
+}
+
+/**
  * 执行完sql后回调
  * @param
  * @return
@@ -504,7 +560,7 @@ func (m *Mapper) afterBehaviourCallback() {
  * @return
  */
 func (m *Mapper) release() {
-	m.upFields = nil
+	m.updateFields = nil
 	m.selectFields = nil
 	m.debug = false
 }
