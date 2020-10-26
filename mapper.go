@@ -519,7 +519,7 @@ func (m *Mapper) ParseQueryAndValueBySearcher(builder *Searcher) *SearcherQueryV
  * @param
  * @return
  */
-func (m *Mapper) ParseSortBySearchBuilder(builder *SearchBuilder) string {
+func (m *Mapper) ParseSortBySearcher(builder *Searcher) string {
 	if len(builder.GetSort()) <= 0 {
 		return ""
 	}
@@ -537,7 +537,7 @@ func (m *Mapper) ParseSortBySearchBuilder(builder *SearchBuilder) string {
  * @param
  * @return
  */
-func (m *Mapper) ParseUpdateValue(entity interface{}) *SearchBuilderQueryValue {
+func (m *Mapper) ParseUpdateValue(entity interface{}) *SearcherQueryValue {
 	vData := make([]interface{}, 0)
 	kData := ""
 	updateFields := m.updateFields

@@ -45,10 +45,10 @@ func main() {
 	//log.Printf("pager: %v", pager)
 	//log.Printf("users: %v", users)
 
-	//fields := []string{"id", "username", "password"}
+	//fields := []string{"Username", "Password"}
 	//user.Password = "abc"
 	//user.Status = 0
-	//num := tem.PreUpdateFields(fields).UpdateByPrimaryKey(32, user)
+	//num := tem.PreUpdateFields(fields).UpdateByPrimaryKey(31, user)
 	//log.Printf("num: %v", num)
 
 	// where := gormmapper.WhereBuilder().Put("id_gt", 30).Put("status", 1)
@@ -66,15 +66,19 @@ func main() {
 	//
 	m := gormmapper.MapperBuilder()
 	gen := gormmapper.MapperGeneratorBuilder(*m)
+	//gen.MapperPackage("mapper")
+	//gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\mapper")
+	//gen.MapperPathAutoSignleton(true)
+	//gen.Start()
+
 	gen.EntityPackage("entity")
-	gen.EntityPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\entity")
-	//gen.MapperPackage("repository")
-	//gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\repository")
+	gen.EntityPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/entity")
 	gen.MapperPackage("mapper")
-	gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\mapper")
+	gen.MapperPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/mapper")
 	gen.MapperPathAutoSignleton(true)
 	gen.Start()
 
+	log.Printf("tem: %v", tem)
 }
 
 type TEM struct {
@@ -97,13 +101,13 @@ func (User) TableName() string {
 func initDB() {
 	config := &gormmapper.DBConfig{
 		User:         "root",
-		Pass:         "",
+		Pass:         "123456",
 		Host:         "127.0.0.1",
 		Port:         3306,
 		DbName:       "test",
 		Charset:      "utf8",
-		MaxIdleConns: 0,
-		MaxOpenConns: 0,
+		MaxIdleConns: 10,
+		MaxOpenConns: 10,
 		EnableLog:    false,
 	}
 
