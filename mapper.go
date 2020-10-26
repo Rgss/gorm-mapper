@@ -18,7 +18,8 @@ type Mapper struct {
 	updateFields []string // 更新字å段
 	selectFields []string // 查询字段
 
-	debug bool // 是否debug
+	debug          bool   // 是否debug
+	databaseSource string // 数据库源
 }
 
 /**
@@ -51,6 +52,16 @@ func (m *Mapper) Model(entity interface{}) *Mapper {
  */
 func (m *Mapper) Debug() *Mapper {
 	m.debug = true
+	return m
+}
+
+/**
+ * 切换数据库源
+ * @param
+ * @return
+ */
+func (m *Mapper) DatabaseSource(name string) *Mapper {
+	m.databaseSource = name
 	return m
 }
 
@@ -394,7 +405,7 @@ func (m *Mapper) RawExec(sqlQuery string, args []interface{}) int64 {
  * @return
  */
 func (m *Mapper) db() *gorm.DB {
-	return GDB()
+	return GDB(m.databaseSource)
 }
 
 /**
@@ -584,6 +595,6 @@ func (m *Mapper) release() {
  * @param
  * @return
  */
-func GDB() *gorm.DB {
-	return Connection().DB()
+func GDB(name string) *gorm.DB {
+	return Connection(name).DB()
 }
