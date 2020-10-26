@@ -13,7 +13,7 @@ gorm-mapper 是一个基于gorm的便捷映射器，更加方便的进行数据�
 
 **安装**  
 ```
-go get -u github.com/Rgss/gorm-mapper
+go get -u github.com/Rgss/gorm-mapper  
 ```
 
 <br>
@@ -114,6 +114,9 @@ type User struct {
  gen := gormmapper.MapperGeneratorBuilder(*m)
  gen.EntityPackage("entity")  // 设置实体报名
  gen.EntityPath("/data/go/src/github.com/Rgss/gorm-mapper/main/entity") // 设置实体路径
+ gen.MapperPackage("mapper")    // 设置映射器包名
+ gen.MapperPath("/data/go/src/github.com/Rgss/gorm-mapper/main/mapper") // 设置映射器包路径
+ gen.MapperPathAutoSignleton(true)
  gen.Start()
 ```
  
