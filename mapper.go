@@ -458,8 +458,18 @@ func (m *Mapper) PreUpdateFields(entity GormMapperEntity, args ...interface{}) *
  * @param   fields 读取字段
  * @return
  */
-func (m *Mapper) PreSelectFields(entity GormMapperEntity, fields []string) *Mapper {
-	m.selectFields = fields
+func (m *Mapper) PreSelectFields(entity GormMapperEntity, args ...interface{}) *Mapper {
+	m.ModelEntity = entity
+	fields := make([]string, 0)
+	for _, v := range args {
+		t := reflect.TypeOf(args).Kind()
+		if t == reflect.Slice {
+			fields = v.([]string)
+		} else {
+			fields = append(fields, v.(string))
+		}
+	}
+	m.updateFields = fields
 	return m
 }
 
@@ -485,7 +495,7 @@ func (m *Mapper) buildSearcher(builder *Searcher) *gorm.DB {
 	d := m.db()
 
 	m.ModelEntity = builder.GetEntity()
-	d = d.Model(builder.Entity)
+	d = d.Model(m.ModelEntity)
 
 	// where
 	queryValue := m.ParseQueryAndValueBySearcher(builder)

@@ -37,14 +37,14 @@ func main() {
 	//log.Printf("pager: %v", pager)
 	//log.Printf("users: %v", users)
 
-	//fields := []string{"id", "username", "password"}
-	//users := make([]User, 0)
-	//where := map[string]interface{}{"id_gt": 31}
-	//builder = builder.Debug().Where(where).Build()
-	//err, pager := tem.PreSelectFields(fields).SelectPageBySearcher(builder, &users)
-	//log.Printf("err: %v", err)
-	//log.Printf("pager: %v", pager)
-	//log.Printf("users: %v", users)
+	fields := []string{"id", "username", "password"}
+	users := make([]User, 0)
+	where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGTE("id", "1"))
+	builder = builder.Debug().Where(where).Build()
+	err, pager := tem.PreSelectFields(&User{}, fields).SelectPageBySearcher(builder, &users)
+	log.Printf("err: %v", err)
+	log.Printf("pager: %v", pager)
+	log.Printf("users: %v", users)
 
 	//fields := []string{"Username", "Password"}
 	//user.Password = "abc"
@@ -52,13 +52,13 @@ func main() {
 	//num := tem.PreUpdateFields(user, fields).UpdateByPrimaryKey(31, user)
 	//log.Printf("num: %v", num)
 
-	fields := []string{"Username", "Password"}
-	where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorEQ("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
-	builder = builder.Debug().Where(where).Build()
-	user.Password = "123456"
-	user.Status = 1
-	num := tem.PreUpdateFields(user, fields).UpdateBySearcher(builder, user)
-	log.Printf("num: %v", num)
+	//fields := []string{"Username", "Password"}
+	//where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorEQ("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
+	//builder = builder.Debug().Where(where).Build()
+	//user.Password = "123456"
+	//user.Status = 1
+	//num := tem.PreUpdateFields(user, fields).UpdateBySearcher(builder, user)
+	//log.Printf("num: %v", num)
 
 	// where := gormmapper.WhereBuilder().Put("id_gt", 30).Put("status", 1)
 	//entity := new(User)
