@@ -24,7 +24,7 @@ type Searcher struct {
 	parsedWhere map[string]interface{}
 	parsedValue map[string]interface{}
 	fields      interface{}
-	entity      interface{}
+	entity      GormMapperEntity
 	debug       bool
 	maxPage     int
 	maxSize     int
@@ -36,9 +36,9 @@ type Searcher struct {
  * @return
  */
 func SearcherBuilder(args ...interface{}) *Searcher {
-	var entity interface{}
+	var entity GormMapperEntity
 	if len(args) > 0 {
-		entity = args[0]
+		entity = args[0].(GormMapperEntity)
 	}
 
 	return &Searcher{
@@ -128,7 +128,7 @@ func (sb *Searcher) Limit(limit int) *Searcher {
  * @param
  * @return
  */
-func (sb *Searcher) Entity(entity interface{}) *Searcher {
+func (sb *Searcher) Entity(entity GormMapperEntity) *Searcher {
 	sb.entity = entity
 	return sb
 }
@@ -141,6 +141,10 @@ func (sb *Searcher) Entity(entity interface{}) *Searcher {
 func (sb *Searcher) Build() *Searcher {
 	sb.ParseWhere()
 	return sb
+}
+
+func (sb *Searcher) GetEntity() GormMapperEntity {
+	return sb.entity
 }
 
 /**

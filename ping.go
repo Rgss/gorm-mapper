@@ -23,9 +23,13 @@ func ping() {
 	log.Printf("[info] database ping ...")
 	for key, value := range connections {
 		sd, err := value.db.DB()
+		if err != nil {
+			log.Printf("[error] db#%v ping error1: %v", key, err.Error())
+		}
+
 		err = sd.Ping()
 		if err != nil {
-			log.Printf("[error] db#%v ping error: %v", key, err.Error())
+			log.Printf("[error] db#%v ping error2: %v", key, err.Error())
 		}
 	}
 }

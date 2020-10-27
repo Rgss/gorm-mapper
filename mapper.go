@@ -12,7 +12,7 @@ var db *gorm.DB
 
 // mapper
 type Mapper struct {
-	ModelEntity  interface{}
+	ModelEntity  GormMapperEntity
 	Builder      *Searcher
 	gdb          *gorm.DB
 	updateFields []string // 更新字å段
@@ -40,7 +40,7 @@ func MapperBuilder() *Mapper {
  * @param
  * @return
  */
-func (m *Mapper) Model(entity interface{}) *Mapper {
+func (m *Mapper) Model(entity GormMapperEntity) *Mapper {
 	m.ModelEntity = entity
 	return m
 }
@@ -186,13 +186,18 @@ func (m *Mapper) SelectPageBySearcher(builder *Searcher, entities interface{}) (
  */
 func (m *Mapper) UpdateByPrimaryKey(id int, entity interface{}) int64 {
 	where := map[string]interface{}{"id": id}
-	d := m.db().Debug()
+	d := m.db()
 
 	if len(m.updateFields) > 0 {
-		value := m.ParseUpdateValue(entity)
-		v := value.Value
-		v = append(v, id)
-		d = d.Exec(" UPDATE user SET "+value.Query+" WHERE id = ?", v...)
+		if m.ModelEntity == nil {
+			log.Printf("the modelentity is not initialized")
+			return 0
+		}
+
+		v := m.ParseUpdateValue(entity)
+		vV := v.Value
+		vV = append(vV, id)
+		d = d.Exec(" UPDATE "+m.ModelEntity.TableName()+" SET "+v.Update+" WHERE id = ?", vV...)
 	} else {
 		d = d.Where(where).Updates(entity)
 	}
@@ -258,7 +263,18 @@ func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
  */
 func (m *Mapper) UpdateBySearcher(builder *Searcher, entity interface{}) int64 {
 	d := m.buildSearcher(builder)
-	d = d.Updates(entity)
+	if len(m.updateFields) > 0 {
+		if m.ModelEntity == nil {
+			log.Printf("the modelentity is not initialized")
+			return 0
+		}
+
+		v := m.ParseUpdateValueBySearcher(builder, entity)
+		d = d.Exec(" UPDATE "+m.ModelEntity.TableName()+" SET "+v.Update+" WHERE "+v.Where, v.Value...)
+	} else {
+		d = d.Updates(entity)
+	}
+
 	m.afterBehaviourCallback()
 	if d.Error != nil {
 		return 0
@@ -422,8 +438,17 @@ func (m *Mapper) DB() *gorm.DB {
  * @param	fields 更新字段
  * @return
  */
-func (m *Mapper) PreUpdateFields(args ...interface{}) *Mapper {
+func (m *Mapper) PreUpdateFields(entity GormMapperEntity, args ...interface{}) *Mapper {
+	m.ModelEntity = entity
 	fields := make([]string, 0)
+	for _, v := range args {
+		t := reflect.TypeOf(args).Kind()
+		if t == reflect.Slice {
+			fields = v.([]string)
+		} else {
+			fields = append(fields, v.(string))
+		}
+	}
 	m.updateFields = fields
 	return m
 }
@@ -433,7 +458,7 @@ func (m *Mapper) PreUpdateFields(args ...interface{}) *Mapper {
  * @param   fields 读取字段
  * @return
  */
-func (m *Mapper) PreSelectFields(fields []string) *Mapper {
+func (m *Mapper) PreSelectFields(entity GormMapperEntity, fields []string) *Mapper {
 	m.selectFields = fields
 	return m
 }
@@ -459,14 +484,11 @@ func (m *Mapper) buildOrder(builder *Searcher, d *gorm.DB) *gorm.DB {
 func (m *Mapper) buildSearcher(builder *Searcher) *gorm.DB {
 	d := m.db()
 
-	if builder.Entity != nil {
-		m.ModelEntity = builder.Entity
-		d = d.Model(builder.Entity)
-	}
+	m.ModelEntity = builder.GetEntity()
+	d = d.Model(builder.Entity)
 
 	// where
 	queryValue := m.ParseQueryAndValueBySearcher(builder)
-	//log.Printf("queryValue: %v", queryValue)
 	if len(queryValue.Query) > 0 {
 		d = d.Where(queryValue.Query, queryValue.Value...)
 	}
@@ -492,7 +514,10 @@ type SearcherQueryValue struct {
 }
 
 // 更新数据
-type SearchBuilderUpdateValue struct {
+type SearcherUpdateValue struct {
+	Update string        // 更新字段
+	Where  string        // 更新条件
+	Value  []interface{} // 更新值
 }
 
 /**
@@ -511,7 +536,7 @@ func (m *Mapper) ParseQueryAndValueBySearcher(builder *Searcher) *SearcherQueryV
 	whereQuery := ""
 	for k, v := range parsedWhere {
 		vs := v.(string)
-		whereQuery += vs + " AND "
+		whereQuery += "" + vs + " AND "
 
 		value := parsedValue[k]
 		whereValue = append(whereValue, value)
@@ -548,12 +573,11 @@ func (m *Mapper) ParseSortBySearcher(builder *Searcher) string {
  * @param
  * @return
  */
-func (m *Mapper) ParseUpdateValue(entity interface{}) *SearcherQueryValue {
+func (m *Mapper) ParseUpdateValue(entity interface{}) *SearcherUpdateValue {
 	vData := make([]interface{}, 0)
 	kData := ""
 	updateFields := m.updateFields
 	mm := m.toMap(entity)
-	log.Printf("mm: %v", mm)
 	for _, v := range updateFields {
 		if _, exists := mm[v]; exists {
 			kData += v + " = ?,"
@@ -561,13 +585,32 @@ func (m *Mapper) ParseUpdateValue(entity interface{}) *SearcherQueryValue {
 		}
 	}
 
-	value := &SearcherQueryValue{
-		Query: strings.Trim(kData, ","),
-		Value: vData,
+	value := &SearcherUpdateValue{
+		Update: strings.Trim(kData, ","),
+		Value:  vData,
 	}
 	log.Printf("updateFields: %v", updateFields)
 	log.Printf("mm: %v", mm)
 	return value
+}
+
+/**
+ * 解析更新字段
+ * @param
+ * @return
+ */
+func (m *Mapper) ParseUpdateValueBySearcher(searcher *Searcher, entity interface{}) *SearcherUpdateValue {
+	sqv := m.ParseQueryAndValueBySearcher(searcher)
+	uv := m.ParseUpdateValue(entity)
+
+	v := uv.Value
+	v = append(v, sqv.Value...)
+	suv := &SearcherUpdateValue{
+		Update: uv.Update,
+		Where:  sqv.Query,
+		Value:  v,
+	}
+	return suv
 }
 
 /**
@@ -585,6 +628,7 @@ func (m *Mapper) afterBehaviourCallback() {
  * @return
  */
 func (m *Mapper) release() {
+	m.ModelEntity = nil
 	m.updateFields = nil
 	m.selectFields = nil
 	m.debug = false

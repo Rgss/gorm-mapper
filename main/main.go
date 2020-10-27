@@ -12,7 +12,7 @@ func main() {
 
 	user := new(User)
 	tem := &TEM{}
-	builder := gormmapper.SearcherBuilder(&user)
+	builder := gormmapper.SearcherBuilder(user)
 	log.Printf("builder: %v", builder)
 	log.Printf("tem: %v", tem)
 
@@ -49,8 +49,16 @@ func main() {
 	//fields := []string{"Username", "Password"}
 	//user.Password = "abc"
 	//user.Status = 0
-	//num := tem.PreUpdateFields(fields).UpdateByPrimaryKey(31, user)
+	//num := tem.PreUpdateFields(user, fields).UpdateByPrimaryKey(31, user)
 	//log.Printf("num: %v", num)
+
+	fields := []string{"Username", "Password"}
+	where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorEQ("id", "1")).AddOperator(gormmapper.OperatorLIKE("username", "%imp%"))
+	builder = builder.Debug().Where(where).Build()
+	user.Password = "123456"
+	user.Status = 1
+	num := tem.PreUpdateFields(user, fields).UpdateBySearcher(builder, user)
+	log.Printf("num: %v", num)
 
 	// where := gormmapper.WhereBuilder().Put("id_gt", 30).Put("status", 1)
 	//entity := new(User)
@@ -65,21 +73,23 @@ func main() {
 	//log.Printf("account: %v", account)
 
 	//
-	m := gormmapper.MapperBuilder()
-	gen := gormmapper.MapperGeneratorBuilder(*m)
+	//m := gormmapper.MapperBuilder()
+	//gen := gormmapper.MapperGeneratorBuilder(*m)
+	//
+	//gen.EntityPackage("entity")
+	//gen.EntityPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\entity")
 	//gen.MapperPackage("mapper")
 	//gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\mapper")
 	//gen.MapperPathAutoSignleton(true)
 	//gen.Start()
 
-	gen.EntityPackage("entity")
-	gen.EntityPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/entity")
-	gen.MapperPackage("mapper")
-	gen.MapperPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/mapper")
-	gen.MapperPathAutoSignleton(true)
-	gen.Start()
+	//gen.EntityPackage("entity")
+	//gen.EntityPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/entity")
+	//gen.MapperPackage("mapper")
+	//gen.MapperPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/mapper")
+	//gen.MapperPathAutoSignleton(true)
+	//gen.Start()
 
-	log.Printf("tem: %v", tem)
 }
 
 type TEM struct {
@@ -102,7 +112,7 @@ func (User) TableName() string {
 func initDB() {
 	config := &gormmapper.DBConfig{
 		User:         "root",
-		Pass:         "123456",
+		Pass:         "",
 		Host:         "127.0.0.1",
 		Port:         3306,
 		DbName:       "test",

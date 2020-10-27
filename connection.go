@@ -15,6 +15,9 @@ type connection struct {
 	conPool *gorm.ConnPool
 }
 
+// 默认连接
+var defaultName string
+
 // instance
 var connections map[string]*connection
 
@@ -106,14 +109,14 @@ func createConnection(name string, dbConfig *DBConfig, config *gorm.Config) *con
 	}
 
 	if dbConfig.MaxIdleTime > 0 {
-		sd.SetConnMaxIdleTime(dbConfig.MaxIdleTime)
+		//	sd.SetConnMaxIdleTime(dbConfig.MaxIdleTime)
 	}
 
-	connection := &connection{
+	c := &connection{
 		name: name,
 		db:   d,
 	}
-	return connection
+	return c
 }
 
 /**
@@ -124,11 +127,13 @@ func createConnection(name string, dbConfig *DBConfig, config *gorm.Config) *con
 func Connection(args ...string) *connection {
 	name := "default"
 	for _, val := range args {
-		name = val
+		if len(val) > 0 {
+			name = val
+		}
 	}
 
 	if _, ok := connections[name]; !ok {
-		s := fmt.Sprintf("the connection %v does not exists.", name)
+		s := fmt.Sprintf("the connection [%v] does not exists.", name)
 		panic(s)
 		return nil
 	}
