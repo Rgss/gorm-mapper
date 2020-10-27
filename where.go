@@ -29,3 +29,15 @@ func (w *Where) AddOperator(op Operator) *Where {
 	w.Put(key, op.Value)
 	return w
 }
+
+/**
+ * 通过map构建
+ * @param
+ * @return
+ */
+func (w *Where) PutAll(where map[string]interface{}) *Where {
+	for k, v := range where {
+		w.Put(k, v)
+	}
+	return w
+}
