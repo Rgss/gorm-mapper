@@ -153,13 +153,13 @@ func (m *Mapper) SelectBySearcher(builder *Searcher, entities interface{}) error
  * @param
  * @return
  */
-func (m *Mapper) SelectPageBySearcher(builder *Searcher, entities interface{}) (error, *Pager) {
+func (m *Mapper) SelectPageBySearcher(builder *Searcher, entities interface{}) (*Pager, error) {
 	d := m.buildSearcher(builder)
 
 	pager := PagerBuilder()
 	if d.Error != nil {
 		m.afterBehaviourCallback()
-		return d.Error, pager
+		return pager, d.Error
 	}
 
 	// count
@@ -175,7 +175,7 @@ func (m *Mapper) SelectPageBySearcher(builder *Searcher, entities interface{}) (
 	e := d.Offset(start).Find(entities).Error
 	m.afterBehaviourCallback()
 
-	return e, pager
+	return pager, e
 }
 
 /**
@@ -184,14 +184,14 @@ func (m *Mapper) SelectPageBySearcher(builder *Searcher, entities interface{}) (
  * @param   entity	更新数据 struct | map
  * @return  int
  */
-func (m *Mapper) UpdateByPrimaryKey(id int, entity interface{}) int64 {
+func (m *Mapper) UpdateByPrimaryKey(id int, entity interface{}) (int64, error) {
 	where := map[string]interface{}{"id": id}
 	d := m.db()
 
 	if len(m.updateFields) > 0 {
 		if m.ModelEntity == nil {
 			log.Printf("the modelentity is not initialized")
-			return 0
+			return 0, nil
 		}
 
 		v := m.ParseUpdateValue(entity)
@@ -204,9 +204,9 @@ func (m *Mapper) UpdateByPrimaryKey(id int, entity interface{}) int64 {
 
 	m.afterBehaviourCallback()
 	if d.Error != nil {
-		return 0
+		return 0, d.Error
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -245,14 +245,14 @@ func (m *Mapper) toMap(entity interface{}) map[string]interface{} {
  * @param
  * @return
  */
-func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
+func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) (int64, error) {
 	where := map[string]interface{}{"id": id}
 	d := m.db().Debug().Where(where).Updates(entity)
 	m.afterBehaviourCallback()
 	if d.Error != nil {
-		return 0
+		return 0, d.Error
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -261,12 +261,12 @@ func (m *Mapper) UpdateSelectiveByPrimaryKey(id int, entity interface{}) int64 {
  * @param
  * @return
  */
-func (m *Mapper) UpdateBySearcher(builder *Searcher, entity interface{}) int64 {
+func (m *Mapper) UpdateBySearcher(builder *Searcher, entity interface{}) (int64, error) {
 	d := m.buildSearcher(builder)
 	if len(m.updateFields) > 0 {
 		if m.ModelEntity == nil {
 			log.Printf("the modelentity is not initialized")
-			return 0
+			return 0, nil
 		}
 
 		v := m.ParseUpdateValueBySearcher(builder, entity)
@@ -277,9 +277,9 @@ func (m *Mapper) UpdateBySearcher(builder *Searcher, entity interface{}) int64 {
 
 	m.afterBehaviourCallback()
 	if d.Error != nil {
-		return 0
+		return 0, d.Error
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -288,14 +288,14 @@ func (m *Mapper) UpdateBySearcher(builder *Searcher, entity interface{}) int64 {
  * @param
  * @return
  */
-func (m *Mapper) UpdateSelectiveBySearcher(builder *Searcher, entity interface{}) int64 {
+func (m *Mapper) UpdateSelectiveBySearcher(builder *Searcher, entity interface{}) (int64, error) {
 	d := m.buildSearcher(builder)
 	d = d.UpdateColumns(entity)
 	m.afterBehaviourCallback()
 	if d.Error != nil {
-		return 0
+		return 0, d.Error
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -304,14 +304,14 @@ func (m *Mapper) UpdateSelectiveBySearcher(builder *Searcher, entity interface{}
  * @param
  * @return
  */
-func (m *Mapper) UpdateGlobalBySearcher(builder *Searcher, entity interface{}) int64 {
+func (m *Mapper) UpdateGlobalBySearcher(builder *Searcher, entity interface{}) (int64, error) {
 	d := m.buildSearcher(builder)
 	d = d.Session(&gorm.Session{AllowGlobalUpdate: true}).Updates(entity)
 	m.afterBehaviourCallback()
 	if d.Error != nil {
-		return 0
+		return 0, d.Error
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -319,14 +319,14 @@ func (m *Mapper) UpdateGlobalBySearcher(builder *Searcher, entity interface{}) i
  * @param
  * @return
  */
-func (m *Mapper) DeleteBySearcher(builder *Searcher) int64 {
+func (m *Mapper) DeleteBySearcher(builder *Searcher) (int64, error) {
 	d := m.buildSearcher(builder)
 	e := d.Delete(m.ModelEntity).Error
 	m.afterBehaviourCallback()
 	if e != nil {
-		return 0
+		return 0, e
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -334,14 +334,14 @@ func (m *Mapper) DeleteBySearcher(builder *Searcher) int64 {
  * @param
  * @return
  */
-func (m *Mapper) DeleteGlobalBySearcher(builder *Searcher) int64 {
+func (m *Mapper) DeleteGlobalBySearcher(builder *Searcher) (int64, error) {
 	d := m.buildSearcher(builder)
 	e := d.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(m.ModelEntity).Error
 	m.afterBehaviourCallback()
 	if e != nil {
-		return 0
+		return 0, e
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -349,14 +349,14 @@ func (m *Mapper) DeleteGlobalBySearcher(builder *Searcher) int64 {
  * @param
  * @return
  */
-func (m *Mapper) DeleteByPrimaryKey(id int) int64 {
+func (m *Mapper) DeleteByPrimaryKey(id int) (int64, error) {
 	where := map[string]interface{}{"id": id}
 	d := m.db().Where(where).Delete(m.ModelEntity)
 	m.afterBehaviourCallback()
 	if d.Error != nil {
-		return 0
+		return 0, d.Error
 	}
-	return d.RowsAffected
+	return d.RowsAffected, nil
 }
 
 /**
@@ -364,15 +364,15 @@ func (m *Mapper) DeleteByPrimaryKey(id int) int64 {
  * @param
  * @return
  */
-func (m *Mapper) CountBySearcher(builder *Searcher) int64 {
+func (m *Mapper) CountBySearcher(builder *Searcher) (int64, error) {
 	var count int64
 	d := m.buildSearcher(builder)
 	e := d.Count(&count).Error
 	m.afterBehaviourCallback()
 	if e != nil {
-		return 0
+		return 0, e
 	}
-	return count
+	return count, nil
 }
 
 /**
@@ -518,13 +518,13 @@ func (m *Mapper) buildSearcher(builder *Searcher) *gorm.DB {
 }
 
 // 搜索条件
-type SearcherQueryValue struct {
+type searcherQueryValue struct {
 	Query string
 	Value []interface{}
 }
 
 // 更新数据
-type SearcherUpdateValue struct {
+type searcherUpdateValue struct {
 	Update string        // 更新字段
 	Where  string        // 更新条件
 	Value  []interface{} // 更新值
@@ -535,10 +535,10 @@ type SearcherUpdateValue struct {
  * @param
  * @return
  */
-func (m *Mapper) ParseQueryAndValueBySearcher(builder *Searcher) *SearcherQueryValue {
+func (m *Mapper) ParseQueryAndValueBySearcher(builder *Searcher) *searcherQueryValue {
 	parsedWhere := builder.GetParsedWhere()
 	if len(parsedWhere) <= 0 {
-		return &SearcherQueryValue{}
+		return &searcherQueryValue{}
 	}
 
 	parsedValue := builder.GetParsedValue()
@@ -553,7 +553,7 @@ func (m *Mapper) ParseQueryAndValueBySearcher(builder *Searcher) *SearcherQueryV
 	}
 
 	whereQuery = strings.Trim(whereQuery, " AND ")
-	queryWhere := &SearcherQueryValue{
+	queryWhere := &searcherQueryValue{
 		Query: whereQuery,
 		Value: whereValue,
 	}
@@ -583,7 +583,7 @@ func (m *Mapper) ParseSortBySearcher(builder *Searcher) string {
  * @param
  * @return
  */
-func (m *Mapper) ParseUpdateValue(entity interface{}) *SearcherUpdateValue {
+func (m *Mapper) ParseUpdateValue(entity interface{}) *searcherUpdateValue {
 	vData := make([]interface{}, 0)
 	kData := ""
 	updateFields := m.updateFields
@@ -595,7 +595,7 @@ func (m *Mapper) ParseUpdateValue(entity interface{}) *SearcherUpdateValue {
 		}
 	}
 
-	value := &SearcherUpdateValue{
+	value := &searcherUpdateValue{
 		Update: strings.Trim(kData, ","),
 		Value:  vData,
 	}
@@ -609,13 +609,13 @@ func (m *Mapper) ParseUpdateValue(entity interface{}) *SearcherUpdateValue {
  * @param
  * @return
  */
-func (m *Mapper) ParseUpdateValueBySearcher(searcher *Searcher, entity interface{}) *SearcherUpdateValue {
+func (m *Mapper) ParseUpdateValueBySearcher(searcher *Searcher, entity interface{}) *searcherUpdateValue {
 	sqv := m.ParseQueryAndValueBySearcher(searcher)
 	uv := m.ParseUpdateValue(entity)
 
 	v := uv.Value
 	v = append(v, sqv.Value...)
-	suv := &SearcherUpdateValue{
+	suv := &searcherUpdateValue{
 		Update: uv.Update,
 		Where:  sqv.Query,
 		Value:  v,
