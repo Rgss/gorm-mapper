@@ -462,7 +462,7 @@ func (m *Mapper) PreSelectFields(entity GormMapperEntity, args ...interface{}) *
 	m.ModelEntity = entity
 	fields := make([]string, 0)
 	for _, v := range args {
-		t := reflect.TypeOf(args).Kind()
+		t := reflect.TypeOf(v).Kind()
 		if t == reflect.Slice {
 			fields = v.([]string)
 		} else {
