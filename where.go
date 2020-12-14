@@ -41,3 +41,13 @@ func (w *Where) PutAll(where map[string]interface{}) *Where {
 	}
 	return w
 }
+
+/**
+ * 通过map构建
+ * @param
+ * @return
+ */
+func (w *Where) Put(key string, val interface{}) *Where {
+	w.Map.Put(key, val)
+	return w
+}

@@ -36,15 +36,15 @@ func main() {
 	//log.Printf("err: %v", err)
 	//log.Printf("pager: %v", pager)
 	//log.Printf("users: %v", users)
-
-	fields := []string{"id", "username", "password"}
-	users := make([]User, 0)
-	where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGTE("id", "1"))
-	builder = builder.Debug().Where(where).Build()
-	err, pager := tem.PreSelectFields(&User{}, fields).SelectPageBySearcher(builder, &users)
-	log.Printf("err: %v", err)
-	log.Printf("pager: %v", pager)
-	log.Printf("users: %v", users)
+	// .PreSelectFields(&User{}, fields)
+	//	fields := []string{"id", "username", "password"}
+	//	users := make([]User, 0)
+	//	where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGTE("id", "1"))
+	//	builder = builder.Debug().Where(where).Build()
+	//	err, pager := tem.SelectPageBySearcher(builder, &users)
+	//	log.Printf("err: %v", err)
+	//	log.Printf("pager: %v", pager)
+	//	log.Printf("users: %v", users)
 
 	//fields := []string{"Username", "Password"}
 	//user.Password = "abc"
@@ -72,16 +72,15 @@ func main() {
 	//mapper.AccountMapper.SelectByPrimaryKey(1, account)
 	//log.Printf("account: %v", account)
 
-	//
-	//m := gormmapper.MapperBuilder()
-	//gen := gormmapper.MapperGeneratorBuilder(*m)
-	//
-	//gen.EntityPackage("entity")
-	//gen.EntityPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\entity")
-	//gen.MapperPackage("mapper")
-	//gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\mapper")
-	//gen.MapperPathAutoSignleton(true)
-	//gen.Start()
+	m := gormmapper.MapperBuilder()
+	gen := gormmapper.MapperGeneratorBuilder(*m)
+
+	gen.EntityPackage("entity")
+	gen.EntityPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\entity")
+	gen.MapperPackage("mapper")
+	gen.MapperPath("E:\\imp\\go\\src\\github.com\\Rgss\\gorm-mapper\\tests\\mapper")
+	gen.MapperPathAutoSignleton(true)
+	gen.Start()
 
 	//gen.EntityPackage("entity")
 	//gen.EntityPath("/Users/zhanglong/data/go/src/github.com/Rgss/gorm-mapper/main/entity")

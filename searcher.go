@@ -286,7 +286,7 @@ func (sb *Searcher) parseOperator(key string, val interface{}) string {
 	var op string
 	var rKey string
 	index := strings.LastIndex(key, "_")
-	if index <= 0 {
+	if index < 0 {
 		op = OPERATE_EQ
 		rKey = key
 	} else {
@@ -294,9 +294,6 @@ func (sb *Searcher) parseOperator(key string, val interface{}) string {
 		op = strings.ToLower(op)
 		rKey = key[0:index]
 	}
-
-	// 设置解析值
-	sb.parsedValue[rKey] = val
 
 	switch op {
 	case OPERATE_GT:
@@ -321,7 +318,12 @@ func (sb *Searcher) parseOperator(key string, val interface{}) string {
 		sb.parsedWhere[rKey] = rKey + " NOT LIKE ? "
 	case OPERATE_EXIST:
 		sb.parsedWhere[rKey] = rKey + " EXIST (?) "
+	default:
+		rKey = key
 	}
+
+	// 设置解析值
+	sb.parsedValue[rKey] = val
 
 	return op
 }
