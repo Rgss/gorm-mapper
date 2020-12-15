@@ -21,7 +21,8 @@ go get -u github.com/Rgss/gorm-mapper
 ## 数据库基本操作    
 
 ```
-// 初始化
+# 初始化
+// 创建test数据库连接
 config := &gormmapper.DBConfig{
     User:         "root",
     Pass:         "",
@@ -33,8 +34,8 @@ config := &gormmapper.DBConfig{
     MaxOpenConns: 10,
     EnableLog:    false,
 }
-
 gormmapper.CreateConnection("default", config, &gorm.Config{})
+
 
 type User struct {  
  	Id         int    `gorm:"not null;primary_key:id;AUTO_INCREMENT" json:"id" form:"id"`  
@@ -90,6 +91,25 @@ type User struct {
  //where := gormmapper.WhereBuilder().AddOperator(gormmapper.OperatorGT("id", "1"))
  //builder.Where(where).Limit(1).Debug().Build()
  //testMappser.DeleteBySearcher(builder)
+
+
+# 多数据源切换
+// 创建account库连接
+accountConfig := &gormmapper.DBConfig{
+    User:         "root",
+    Pass:         "",
+    Host:         "127.0.0.1",
+    Port:         3306,
+    DbName:       "account",
+    Charset:      "utf8",
+    MaxIdleConns: 10,
+    MaxOpenConns: 10,
+    EnableLog:    false,
+}
+gormmapper.CreateConnection("account", accountConfig, &gorm.Config{})
+
+gormmapper.DatabaseSource("account").SelectByPrimaryKey(1)  // account 库
+gormmapper.SelectByPrimaryKey(2)  // test 库
 
  ```
  <br>
