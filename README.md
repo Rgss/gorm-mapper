@@ -21,6 +21,21 @@ go get -u github.com/Rgss/gorm-mapper
 ## 数据库基本操作    
 
 ```
+// 初始化
+config := &gormmapper.DBConfig{
+    User:         "root",
+    Pass:         "",
+    Host:         "127.0.0.1",
+    Port:         3306,
+    DbName:       "test",
+    Charset:      "utf8",
+    MaxIdleConns: 10,
+    MaxOpenConns: 10,
+    EnableLog:    false,
+}
+
+gormmapper.CreateConnection("default", config, &gorm.Config{})
+
 type User struct {  
  	Id         int    `gorm:"not null;primary_key:id;AUTO_INCREMENT" json:"id" form:"id"`  
  	Username   string `gorm:"column:username;not null;default:''" json:"username" form:"username"`  
