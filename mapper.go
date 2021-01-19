@@ -533,11 +533,11 @@ func (m *Mapper) ParseQueryAndValueBySearcher(builder *Searcher) *searcherQueryV
 	whereValue := make([]interface{}, 0)
 	whereQuery := ""
 	for k, v := range parsedWhere {
-		w := v.(string)
+		w := v.v.(string)
 		w = toDBColumnName(w)
 		whereQuery += "" + w + " AND "
 
-		value := parsedValue[k]
+		value := parsedValue[k].v
 		whereValue = append(whereValue, value)
 	}
 
@@ -631,6 +631,9 @@ func (m *Mapper) release() {
 	m.updateFields = nil
 	m.selectFields = nil
 	m.debug = false
+	m.databaseSource = ""
+	m.aliasName = ""
+	m.join = nil
 }
 
 /**

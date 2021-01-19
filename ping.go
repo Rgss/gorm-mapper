@@ -12,7 +12,7 @@ func Ping() {
 	c := cron.New(o, cron.WithSeconds())
 
 	// 定时检查
-	c.AddFunc("@every 30m", func() {
+	c.AddFunc("@every 300s", func() {
 		ping()
 	})
 

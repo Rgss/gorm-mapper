@@ -64,14 +64,13 @@ func CreateDB(name string, d *gorm.DB) {
  */
 func CreateConnection(name string, dbConfig *DBConfig, config *gorm.Config) *connection {
 	connection := createConnection(name, dbConfig, config)
-
-	if len(connections) <= 0 {
-		defaultName = name
-	}
-
 	if connection == nil {
 		panic("create connection error.")
 		return nil
+	}
+
+	if len(connections) <= 0 {
+		defaultName = name
 	}
 
 	connections[name] = connection

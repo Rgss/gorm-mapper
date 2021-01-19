@@ -21,13 +21,18 @@ type Searcher struct {
 	group       interface{}
 	sort        map[string]string
 	where       *Where
-	parsedWhere map[string]interface{}
-	parsedValue map[string]interface{}
+	parsedWhere []*KV
+	parsedValue []*KV
 	fields      interface{}
 	entity      GormMapperEntity
 	debug       bool
 	maxPage     int
 	maxSize     int
+}
+
+type KV struct {
+	k string
+	v interface{}
 }
 
 /**
@@ -43,9 +48,10 @@ func SearcherBuilder(args ...interface{}) *Searcher {
 
 	return &Searcher{
 		entity:      entity,
+		where:       &Where{},
 		sort:        make(map[string]string),
-		parsedWhere: make(map[string]interface{}),
-		parsedValue: make(map[string]interface{}),
+		parsedWhere: make([]*KV, 0),
+		parsedValue: make([]*KV, 0),
 	}
 }
 
@@ -67,7 +73,7 @@ func (sb *Searcher) Where(where *Where) *Searcher {
  * @return
  */
 func (sb *Searcher) Sort(column string, sortType string) *Searcher {
-	sb.sort[column] = sortType
+	sb.sort[column] = strings.ToUpper(sortType)
 	return sb
 }
 
@@ -252,7 +258,7 @@ func (sb *Searcher) GetWhere() interface{} {
  * @param
  * @return
  */
-func (sb *Searcher) GetParsedWhere() map[string]interface{} {
+func (sb *Searcher) GetParsedWhere() []*KV {
 	return sb.parsedWhere
 }
 
@@ -261,7 +267,7 @@ func (sb *Searcher) GetParsedWhere() map[string]interface{} {
  * @param
  * @return
  */
-func (sb *Searcher) GetParsedValue() map[string]interface{} {
+func (sb *Searcher) GetParsedValue() []*KV {
 	return sb.parsedValue
 }
 
@@ -282,7 +288,7 @@ func (sb *Searcher) ParseWhere() {
  * @param where
  * @return
  */
-func (sb *Searcher) parseOperator(key string, val interface{}) string {
+func (sb *Searcher) parseOperator(key string, val interface{}) {
 	var op string
 	var rKey string
 	index := strings.LastIndex(key, "_")
@@ -295,35 +301,44 @@ func (sb *Searcher) parseOperator(key string, val interface{}) string {
 		rKey = key[0:index]
 	}
 
+	wv := ""
 	switch op {
 	case OPERATE_GT:
-		sb.parsedWhere[rKey] = rKey + " > ? "
+		wv = rKey + " > ? "
 	case OPERATE_GTE:
-		sb.parsedWhere[rKey] = rKey + " >= ? "
+		wv = rKey + " >= ? "
 	case OPERATE_LT:
-		sb.parsedWhere[rKey] = rKey + " < ? "
+		wv = rKey + " < ? "
 	case OPERATE_LTE:
-		sb.parsedWhere[rKey] = rKey + " <= ? "
+		wv = rKey + " <= ? "
 	case OPERATE_EQ:
-		sb.parsedWhere[rKey] = rKey + " = ? "
+		wv = rKey + " = ? "
 	case OPERATE_NE:
-		sb.parsedWhere[rKey] = rKey + " <> ? "
+		wv = rKey + " <> ? "
 	case OPERATE_IN:
-		sb.parsedWhere[rKey] = rKey + " IN (?) "
+		wv = rKey + " IN (?) "
 	case OPERATE_NOT_IN:
-		sb.parsedWhere[rKey] = rKey + " NOT IN (?) "
+		wv = rKey + " NOT IN (?) "
 	case OPERATE_LIKE:
-		sb.parsedWhere[rKey] = rKey + " LIKE ? "
+		wv = rKey + " LIKE ? "
 	case OPERATE_NOT_LIKE:
-		sb.parsedWhere[rKey] = rKey + " NOT LIKE ? "
+		wv = rKey + " NOT LIKE ? "
 	case OPERATE_EXIST:
-		sb.parsedWhere[rKey] = rKey + " EXIST (?) "
+		wv = rKey + " EXIST (?) "
 	default:
 		rKey = key
+		//wv = rKey + " = ? "
 	}
 
-	// 设置解析值
-	sb.parsedValue[rKey] = val
+	kv := &KV{
+		k: rKey,
+		v: wv,
+	}
+	sb.parsedWhere = append(sb.parsedWhere, kv)
 
-	return op
+	vv := &KV{
+		k: rKey,
+		v: val,
+	}
+	sb.parsedValue = append(sb.parsedValue, vv)
 }

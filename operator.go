@@ -30,7 +30,7 @@ type Operator struct {
 }
 
 /**
- * 等于
+ * =
  * @param
  * @return
  */
@@ -43,7 +43,7 @@ func OperatorEQ(key string, val interface{}) Operator {
 }
 
 /**
- * 不等于
+ * <>
  * @param
  * @return
  */
@@ -56,7 +56,7 @@ func OperatorNE(key string, val interface{}) Operator {
 }
 
 /**
- * 大于
+ * >
  * @param
  * @return
  */
@@ -69,7 +69,7 @@ func OperatorGT(key string, val interface{}) Operator {
 }
 
 /**
- * 大于等于
+ * >=
  * @param
  * @return
  */
@@ -82,7 +82,7 @@ func OperatorGTE(key string, val interface{}) Operator {
 }
 
 /**
- * 小于
+ * <
  * @param
  * @return
  */
@@ -95,7 +95,7 @@ func OperatorLT(key string, val interface{}) Operator {
 }
 
 /**
- * 小于等于
+ * <=
  * @param
  * @return
  */
